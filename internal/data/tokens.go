@@ -8,7 +8,7 @@ import (
 	"encoding/base32"
 	"time"
 
-	"github.com/abner-tech/Comments-Api.git/internal/validator"
+	"github.com/abner-tech/Test3-Api.git/internal/validator"
 )
 
 // purpose of the token

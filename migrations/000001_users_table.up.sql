@@ -1,3 +1,6 @@
+/* to allow type cytext on our database */
+CREATE EXTENSION IF NOT EXISTS citext;
+
 CREATE TABLE IF NOT EXISTS users (
     id bigserial PRIMARY KEY,
     created_at timestamp(0) WITH TIME ZONE NOT NULL DEFAULT NOW(),

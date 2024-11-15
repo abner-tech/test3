@@ -5,13 +5,13 @@ include .envrc
 .PHONY: run/api
 run/api:
 	@echo 'Running Application...'
-	@go run ./cmd/api -port=4000 -env=development -limiter-burst=5 -limiter-rps=2 -limiter-enabled=false -db-dsn=${COMMENTS_DB_DSN}
+	@go run ./cmd/api -port=4000 -env=development -limiter-burst=5 -limiter-rps=2 -limiter-enabled=false -db-dsn=${TEST3_DB_DSN}
 ## @go run ./cmd/api/ -port=4000 -env=production -db-dsn=${COMMENTS_DB_DSN}
 
 ## db/psql: connect to the database using psql (terminal)
 .PHONY: db/psql
 db/psql: 
-	psql ${COMMENTS_DB_DSN}
+	psql ${TEST3_DB_DSN}
 
 ## db/migrations/new name=$1: create a new database migration
 .PHONY db/migrations/new:
@@ -21,5 +21,15 @@ db/psql:
 ## db/migrations/up: apply all up database migrations
 .PHONY: db/migrations/up
 db/migrations/up:
-	@echo 'Running up migrations...'
-	migrate -path ./migrations -database ${COMMENTS_DB_DSN} up
+	@echo 'Running UP migrations...'
+	migrate -path ./migrations -database ${TEST3_DB_DSN} up
+
+.PHONY: db/migrations/down
+db/migrations/down:
+	@echo 'Running DOWN migrations...'
+	migrate -path ./migrations -database ${TEST3_DB_DSN} down
+
+.PHONY: db/migrations/version
+db/migrations/version:
+	@echo 'Checking current database migration version.....'
+	migrate -path ./migrations -database ${TEST3_DB_DSN} version

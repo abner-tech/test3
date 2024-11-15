@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/abner-tech/Comments-Api.git/internal/data"
-	"github.com/abner-tech/Comments-Api.git/internal/validator"
+	"github.com/abner-tech/Test3-Api.git/internal/data"
+	"github.com/abner-tech/Test3-Api.git/internal/validator"
 	"golang.org/x/time/rate"
 )
 

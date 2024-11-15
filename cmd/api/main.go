@@ -9,12 +9,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/abner-tech/Comments-Api.git/internal/data"
-	"github.com/abner-tech/Comments-Api.git/internal/mailer"
+	"github.com/abner-tech/Test3-Api.git/internal/data"
+	"github.com/abner-tech/Test3-Api.git/internal/mailer"
 	_ "github.com/lib/pq"
 )
 
-const appVersion = "3.0.0"
+const appVersion = "1.0.0"
 
 type serverConfig struct {
 	port        int
@@ -37,13 +37,12 @@ type serverConfig struct {
 }
 
 type applicationDependences struct {
-	config       serverConfig
-	logger       *slog.Logger
-	commentModel data.CommentModel
-	userModel    data.UserModel
-	mailer       mailer.Mailer
-	wg           sync.WaitGroup
-	tokenModel   data.TokenModel
+	config     serverConfig
+	logger     *slog.Logger
+	userModel  data.UserModel
+	mailer     mailer.Mailer
+	wg         sync.WaitGroup
+	tokenModel data.TokenModel
 }
 
 func main() {
@@ -51,7 +50,7 @@ func main() {
 	flag.IntVar(&settings.port, "port", 4000, "Server Port")
 	flag.StringVar(&settings.environment, "env", "development", "Environment(development|staging|production)")
 	//read the dsn
-	flag.StringVar(&settings.db.dsn, "db-dsn", "postgres://comments:comments@localhost/comments?sslmode=disable", "PostgreSQL DSN")
+	flag.StringVar(&settings.db.dsn, "db-dsn", "postgres://test3:test3@localhost/test3?sslmode=disable", "PostgreSQL DSN")
 
 	//limiter flags
 	flag.Float64Var(&settings.limiter.rps, "limiter-rps", 2, "rate limiter maximum request per second")
@@ -61,11 +60,11 @@ func main() {
 	//mailer flags
 	flag.StringVar(&settings.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
 	//many ports are available, 25, 465, 587, 2525. If 25 doesn't work choose another
-	flag.IntVar(&settings.smtp.port, "smtp-port", 25, "SMTP port")
+	flag.IntVar(&settings.smtp.port, "smtp-port", 2525, "SMTP port")
 	//personnal values provided by mailtrap
 	flag.StringVar(&settings.smtp.username, "smtp-username", "839422506900bd", "SMTP username")
 	flag.StringVar(&settings.smtp.password, "smtp-password", "ffb5cf13aa90aa", "SMTP password")
-	flag.StringVar(&settings.smtp.sender, "smtp-sender", "Comments Community <no-reply@commentscommunity.amencias.net>", "SMTP sender")
+	flag.StringVar(&settings.smtp.sender, "smtp-sender", "Readign Community <no-reply@readingcommunity.amencias.net>", "SMTP sender")
 
 	flag.Parse()
 
@@ -84,12 +83,11 @@ func main() {
 	logger.Info("Database Connection Pool Established")
 
 	appInstance := &applicationDependences{
-		config:       settings,
-		logger:       logger,
-		commentModel: data.CommentModel{DB: db},
-		userModel:    data.UserModel{DB: db},
-		mailer:       mailer.New(settings.smtp.host, settings.smtp.port, settings.smtp.username, settings.smtp.password, settings.smtp.sender),
-		tokenModel:   data.TokenModel{DB: db},
+		config:     settings,
+		logger:     logger,
+		userModel:  data.UserModel{DB: db},
+		mailer:     mailer.New(settings.smtp.host, settings.smtp.port, settings.smtp.username, settings.smtp.password, settings.smtp.sender),
+		tokenModel: data.TokenModel{DB: db},
 	}
 
 	// apiServer := &http.Server{

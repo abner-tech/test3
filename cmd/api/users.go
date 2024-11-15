@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/abner-tech/Comments-Api.git/internal/data"
-	"github.com/abner-tech/Comments-Api.git/internal/validator"
+	"github.com/abner-tech/Test3-Api.git/internal/data"
+	"github.com/abner-tech/Test3-Api.git/internal/validator"
 )
 
-func (a *applicationDependences) registerUserhandler(w http.ResponseWriter, r *http.Request) {
+func (a *applicationDependences) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	var incomingData struct {
 		Username string `json:"username"`

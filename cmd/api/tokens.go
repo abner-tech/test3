@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/abner-tech/Comments-Api.git/internal/data"
-	"github.com/abner-tech/Comments-Api.git/internal/validator"
+	"github.com/abner-tech/Test3-Api.git/internal/data"
+	"github.com/abner-tech/Test3-Api.git/internal/validator"
 )
 
 func (a *applicationDependences) createAuthenticationTokenHandler(w http.ResponseWriter, r *http.Request) {
