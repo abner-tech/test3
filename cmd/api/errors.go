@@ -78,3 +78,15 @@ func (a *applicationDependences) invalidAuthenticationTokenResponse(w http.Respo
 	message := "invalid or missing authentication token"
 	a.errorResponseJSON(w, r, http.StatusUnauthorized, message)
 }
+
+// Note: 401 is Unauthorized (anonymous) and 403 is Forbidden (authenticated
+// but not activated or don't have the right privilege)
+func (a *applicationDependences) authenticationRequiredResponse(w http.ResponseWriter, r *http.Request) {
+	message := "you must be authenthicated to access this resource"
+	a.errorResponseJSON(w, r, http.StatusUnauthorized, message)
+}
+
+func (a *applicationDependences) inactiveAccountResponse(w http.ResponseWriter, r *http.Request) {
+	message := "your user account must be activated to access this resource"
+	a.errorResponseJSON(w, r, http.StatusForbidden, message)
+}

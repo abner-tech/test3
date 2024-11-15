@@ -153,5 +153,4 @@ func (a *applicationDependences) activateUserHandler(w http.ResponseWriter, r *h
 		a.serverErrorResponse(w, r, err)
 		return
 	}
-
 }

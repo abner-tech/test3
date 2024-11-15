@@ -4,10 +4,10 @@
 BODY='{"username": "John Doe", "email": "john@example.com", "password": "mangotree"}'
 
 //actual sign in
-curl -d "$BODY" localhost:4000/v1/users
+curl -d "$BODY" localhost:4000/api/v1/register/user
 
 //activating the user....NOTE: the TOKEN VALUE is sent through email
-curl -X PUT -d '{"token": "TOKEN VALUE"}' localhost:4000/v1/users/activated
+curl -X PUT -d '{"token": "TOKEN VALUE"}' localhost:4000/api/v1/users/activated
 
 
 //AUTHENTICATE USER
@@ -16,7 +16,7 @@ curl -X PUT -d '{"token": "TOKEN VALUE"}' localhost:4000/v1/users/activated
 BODY='{"email": "a2@example.com", "password": "mangotree"}'
 
 //triger authentication endpoint: this will return a token, and the expiry date for its use
-curl -d "$BODY" localhost:4000/v1/tokens/authentication
+curl -d "$BODY" localhost:4000/api/v1/tokens/authentication
 
 //send a request along with the bearer token that is returned
-curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/v1/healthcheck
+curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/healthcheck
