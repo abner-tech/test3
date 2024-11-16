@@ -24,14 +24,6 @@ type User struct {
 	Version    int       `json:"-"`
 }
 
-// reading_list type declaration
-type Reading_List struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	CreatedBy   int64  `json:"xreated_by"`
-}
-
 type password struct {
 	plaintext *string
 	hash      []byte
@@ -295,4 +287,20 @@ func ValidateUser(v *validator.Validator, user *User) {
 // check if current user is anonymous
 func (u *User) IsAnonymous() bool {
 	return u == AnonymouseUser
+}
+
+func (u *UserModel) UserExist(id int64) error {
+	query := `
+	SELECT users.id
+	FROM users
+	WHERE id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var ID int64
+	println(id)
+
+	return u.DB.QueryRowContext(ctx, query, id).Scan(&ID)
 }

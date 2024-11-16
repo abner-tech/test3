@@ -1,0 +1,70 @@
+package main
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/abner-tech/Test3-Api.git/internal/data"
+	"github.com/abner-tech/Test3-Api.git/internal/validator"
+)
+
+func (a *applicationDependences) createReadingListHandler(w http.ResponseWriter, r *http.Request) {
+	//create a struct to hold a list
+	var incomingData struct {
+		ListName        string `json:"name"`
+		ListDescription string `json:"description"`
+		CreatedBy       int64  `json:"created_by"`
+	}
+
+	//decoding
+	err := a.readJSON(w, r, &incomingData)
+	if err != nil {
+		a.badRequestResponse(w, r, err)
+		return
+	}
+
+	reading_List := &data.Reading_List{
+		Name:        incomingData.ListName,
+		Description: incomingData.ListDescription,
+		CreatedBy:   incomingData.CreatedBy,
+	}
+
+	//validate inserted data
+	v := validator.New()
+	data.ValidateReadingList(v, reading_List)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	//check if user list is created for exists
+	err = a.userModel.UserExist(incomingData.CreatedBy)
+	if err != nil {
+		println(err.Error())
+		//no record exist for the user id provideds
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	//create the list in the database
+	err = a.readingListModel.CreateReadingList(reading_List)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+
+	//setting location header path to newly created list
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/api/v1/lists/%d", reading_List.ID))
+
+	//send json response woth a 201 status code (new resource ccreated)
+	data := envelope{
+		"readingLists": reading_List,
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}

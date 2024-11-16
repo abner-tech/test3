@@ -19,6 +19,7 @@ func (a *applicationDependences) routes() http.Handler {
 	//setup routes
 	router.HandlerFunc(http.MethodGet, "/api/v1/healthcheck", a.healthChechHandler)
 
+	//REGISTERING USER
 	router.HandlerFunc(http.MethodPost, "/api/v1/register/user", a.registerUserHandler)
 	router.HandlerFunc(http.MethodPut, "/api/v1/users/activated", a.activateUserHandler)
 	router.HandlerFunc(http.MethodPost, "/api/v1/tokens/authentication", a.createAuthenticationTokenHandler)
@@ -26,9 +27,10 @@ func (a *applicationDependences) routes() http.Handler {
 	//the following is the method in which we'll wrap all of our endpoints
 	//router.HandlerFunc(http.MethodPost, "/api/v1/SOME ENDPOINT", a.requireActivatedUser(SOME_HANDLER_FUNCTION))
 
-	
 	router.HandlerFunc(http.MethodGet, "/api/v1/users/:uid", a.listUserProfileHandler)
 
+	//READING LISTS
+	router.HandlerFunc(http.MethodPost, "/api/v1/lists", a.createReadingListHandler)
 
 	return a.recoverPanic(a.rateLimiting(a.authenticate(router)))
 }

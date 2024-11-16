@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS reading_lists (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     created_by INT REFERENCES users(id) ON DELETE SET NULL,
+    created_at timestamp(0) WITH TIME ZONE NOT NULL DEFAULT NOW(),
     version INT NOT NULL DEFAULT 1
 );
 
