@@ -91,6 +91,37 @@ func (u *UserModel) GetByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
+// get the user by the provided id
+func (u *UserModel) GetByID(id int64) (*User, error) {
+	query := `
+	SELECT id, created_at, username, email, activated, version
+	FROM users
+	WHERE id = $1
+	`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var user User
+	err := u.DB.QueryRowContext(ctx, query, id).Scan(
+		&user.ID,
+		&user.Created_At,
+		&user.Username,
+		&user.Email,
+		&user.Activated,
+		&user.Version,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
+}
+
 func (u *UserModel) GetForToken(tokenScope, tokenPlainText string) (*User, error) {
 	tokenHash := sha256.Sum256([]byte(tokenPlainText))
 
