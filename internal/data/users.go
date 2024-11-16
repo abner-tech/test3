@@ -13,6 +13,7 @@ import (
 
 var AnonymouseUser = &User{}
 
+// user type declaration
 type User struct {
 	ID         int64     `json:"id"`
 	Created_At time.Time `json:"created_at"`
@@ -21,6 +22,14 @@ type User struct {
 	Password   password  `json:"-"`
 	Activated  bool      `json:"activated"`
 	Version    int       `json:"-"`
+}
+
+// reading_list type declaration
+type Reading_List struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	CreatedBy   int64  `json:"xreated_by"`
 }
 
 type password struct {
@@ -120,6 +129,33 @@ func (u *UserModel) GetByID(id int64) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+// get the user reading lists using the user id
+func (u *UserModel) GetUserReadingLists(id int64) (*Reading_List, error) {
+	query := `
+	SELECT id, name, description
+	FROM reading_lists
+	WHERE created_by = $1
+	`
+	var userReadinglist Reading_List
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	err := u.DB.QueryRowContext(ctx, query, id).Scan(
+		&userReadinglist.ID,
+		&userReadinglist.Name,
+		&userReadinglist.Description,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &userReadinglist, nil
 }
 
 func (u *UserModel) GetForToken(tokenScope, tokenPlainText string) (*User, error) {

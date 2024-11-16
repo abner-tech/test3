@@ -9,6 +9,7 @@ import (
 	"github.com/abner-tech/Test3-Api.git/internal/validator"
 )
 
+// midleware to ensure user is registered
 func (a *applicationDependences) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	var incomingData struct {
@@ -90,6 +91,7 @@ func (a *applicationDependences) registerUserHandler(w http.ResponseWriter, r *h
 	}
 }
 
+// middleware to ensure user is activated
 func (a *applicationDependences) activateUserHandler(w http.ResponseWriter, r *http.Request) {
 	//get the body from the request and store in temporary struct
 
@@ -156,16 +158,16 @@ func (a *applicationDependences) activateUserHandler(w http.ResponseWriter, r *h
 }
 
 func (a *applicationDependences) listUserProfileHandler(w http.ResponseWriter, r *http.Request) {
-	//get the id from the URL so that we can use it to query the comments table.
+	//get the id from the URL so that we can use it to query the user table.
 	//'uid' for userID
-	id, err := a.readIDParam(r, "uid")
+	uid, err := a.readIDParam(r, "uid")
 	if err != nil {
 		a.notFoundResponse(w, r)
 		return
 	}
 
 	//call the GetUserProfile() function to retrieve
-	user, err := a.userModel.GetByID(id)
+	user, err := a.userModel.GetByID(uid)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -179,6 +181,38 @@ func (a *applicationDependences) listUserProfileHandler(w http.ResponseWriter, r
 	//display the user information
 	data := envelope{
 		"user": user,
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (a *applicationDependences) listUserReadingListHandler(w http.ResponseWriter, r *http.Request) {
+	//get the user id from the url so that we can use it to query the reading list table
+	//uid for reading list id
+	uid, err := a.readIDParam(r, "uid")
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	//call the GetUserReadingLists function to get our info from the database
+	readignLists, err := a.userModel.GetUserReadingLists(uid)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	data := envelope{
+		"readingList": readignLists,
 	}
 
 	err = a.writeJSON(w, http.StatusOK, data, nil)

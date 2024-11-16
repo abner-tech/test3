@@ -29,7 +29,19 @@ db/migrations/down:
 	@echo 'Running DOWN migrations...'
 	migrate -path ./migrations -database ${TEST3_DB_DSN} down
 
+
 .PHONY: db/migrations/version
 db/migrations/version:
 	@echo 'Checking current database migration version.....'
 	migrate -path ./migrations -database ${TEST3_DB_DSN} version
+
+.PHONY: db/migrations/force
+db/migrations/force:
+	@echo 'Chenging current database migration version to ${version}'
+	migrate -path ./migrations -database ${TEST3_DB_DSN} force ${version}
+
+.PHONY: db/migrations/goto
+db/migrations/goto:
+	@echo 'ROlling back to version: ${version}'
+	migrate -path ./migrations -database ${TEST3_DB_DSN} goto ${version}
+
