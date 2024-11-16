@@ -3,6 +3,8 @@ package data
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/abner-tech/Test3-Api.git/internal/validator"
@@ -50,4 +52,60 @@ func (r *ReadingListModel) CreateReadingList(reading_List *Reading_List) error {
 		&reading_List.CreatedAt,
 		&reading_List.Version,
 	)
+}
+
+func (r *ReadingListModel) GetAll(description string, filters Fileters) ([]*Reading_List, Metadata, error) {
+	query := fmt.Sprintf(`
+	SELECT COUNT(*) OVER(), id, name, description, created_at, created_by, version
+	FROM reading_lists
+	WHERE (to_tsvector('simple',description) @@
+		plainto_tsquery('simple', $1) OR $1 = '')
+	ORDER BY %s %s, id ASC
+	LIMIT $2 OFFSET $3
+	`, filters.sortColumn(), filters.sortDirection())
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := r.DB.QueryContext(ctx, query, description, filters.limit(), filters.offset())
+	//checking for errors
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, Metadata{}, err
+		default:
+			return nil, Metadata{}, err
+		}
+	}
+
+	defer rows.Close()
+
+	totalRecords := 0
+
+	lists := []*Reading_List{}
+
+	for rows.Next() {
+		var rec Reading_List
+		err := rows.Scan(
+			&totalRecords,
+			&rec.ID,
+			&rec.Name,
+			&rec.Description,
+			&rec.CreatedAt,
+			&rec.CreatedBy,
+			&rec.Version,
+		)
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+		lists = append(lists, &rec)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	//create the metadata
+	metadata := calculateMetaData(totalRecords, filters.Page, filters.PageSize)
+
+	return lists, metadata, nil
 }

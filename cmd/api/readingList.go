@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/abner-tech/Test3-Api.git/internal/validator"
 )
 
+// create a reading list for the user
 func (a *applicationDependences) createReadingListHandler(w http.ResponseWriter, r *http.Request) {
 	//create a struct to hold a list
 	var incomingData struct {
@@ -37,7 +39,7 @@ func (a *applicationDependences) createReadingListHandler(w http.ResponseWriter,
 		return
 	}
 
-	//check if user list is created for exists
+	//check if user the list is created for does exists
 	err = a.userModel.UserExist(incomingData.CreatedBy)
 	if err != nil {
 		println(err.Error())
@@ -60,6 +62,57 @@ func (a *applicationDependences) createReadingListHandler(w http.ResponseWriter,
 	//send json response woth a 201 status code (new resource ccreated)
 	data := envelope{
 		"readingLists": reading_List,
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+// fetches all existing reading list for all users
+func (a *applicationDependences) listAllReadingListHandler(w http.ResponseWriter, r *http.Request) {
+	//to hold query parameters
+	var queryParameterData struct {
+		Description string
+		data.Fileters
+	}
+
+	//get query parameters from url
+	queryParameter := r.URL.Query()
+
+	//load the query parameters into the created struct
+	queryParameterData.Description = a.getSingleQueryParameter(queryParameter, "description", "")
+	v := validator.New()
+
+	queryParameterData.Fileters.Page = a.getSingleIntigerParameter(queryParameter, "page", 1, v)
+	queryParameterData.Fileters.PageSize = a.getSingleIntigerParameter(queryParameter, "page_size", 10, v)
+	queryParameterData.Fileters.Sorting = a.getSingleQueryParameter(queryParameter, "sorting", "id")
+	queryParameterData.Fileters.SortSafeList = []string{"id", "created_at", "-id", "-created_at"}
+
+	//check validity of filters
+	data.ValidateFilters(v, queryParameterData.Fileters)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	readingList, metadata, err := a.readingListModel.GetAll(queryParameterData.Description, queryParameterData.Fileters)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+			return
+		default:
+			a.serverErrorResponse(w, r, err)
+			return
+		}
+	}
+
+	data := envelope{
+		"readingList": readingList,
+		"@metadata":   metadata,
 	}
 
 	err = a.writeJSON(w, http.StatusOK, data, nil)
