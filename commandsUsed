@@ -12,7 +12,7 @@ curl -X PUT -d '{"token": "TOKEN VALUE"}' localhost:4000/api/v1/users/activated
 
 
 
-//AUTHENTICATE USER
+//AUTHENTICATE USER SECTION
 
 //declaring the body for our request NOTE: replace values with credentials
 BODY='{"email": "john@example.com", "password": "mangotree"}'
@@ -25,7 +25,7 @@ curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/healthchec
 //current authorization token for user1: LNHATDTSKLKFVVNTKC4YQ5IFIY
 
 //get user information printed, note that password wont be printed 
- curl -i  http://localhost:4000/api/v1/users/1
+ curl -i  localhost:4000/api/v1/users/1
 
 
 

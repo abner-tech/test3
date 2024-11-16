@@ -1,46 +1,85 @@
-# Books-Api
+# API Usage Guide
 
-#BEGISTER USER 
+## REGISTER USER
 
-//declaring the body with user beign signed
+### Step 1: Register a New User
+```bash
+# Define the request body
 BODY='{"username": "John Doe", "email": "john@example.com", "password": "mangotree"}'
 
-//actual sign in
-curl -d "$BODY" localhost:4000/api/v1/register/user
+# Register the user
+curl -d "$BODY" http://localhost:4000/api/v1/register/user
+```
 
-//activating the user....NOTE: the TOKEN VALUE is sent through email
-curl -X PUT -d '{"token": "TOKEN VALUE"}' localhost:4000/api/v1/users/activated
-
-
-
-
-//AUTHENTICATE USER
-
-//declaring the body for our request NOTE: replace values with credentials
-BODY='{ "email": "john@example.com", "password": "mangotree"}'
-
-//triger authentication endpoint: this will return a token, and the expiry date for its use
-curl -d "$BODY" localhost:4000/api/v1/tokens/authentication
-
-//send a request along with the bearer token that is returned
-curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/healthcheck
-//current authorization token for user1: LNHATDTSKLKFVVNTKC4YQ5IFIY
-
-//get user information printes, note that password wont be printed 
- curl -i  http://localhost:4000/api/v1/users/1
+### Step 2: Activate the User **NOTE: the TOKEN VALUE is sent through email**
+```bash
+# Replace "TOKEN_VALUE" with the token sent via email
+curl -X PUT -d '{"token": "TOKEN_VALUE"}' http://localhost:4000/api/v1/users/activated
+```
 
 
 
-//READING LIST SECTION
+## AUTHENTICATE THE USER
 
-//show all lists
-curl -i localhost:4000/api/v1/lists
+### Step 1: Request authentication by logging in to authentication endpoint
 
-//show a specific list
-curl -i localhost:4000/api/v1/lists/:rl_id
+```bash
+# Define the request body
+BODY='{"email": "john@example.com", "password": "mangotree"}'
 
-//making a list for the existing user with id 1
-BODY='{"name":"Manga Section","description":"list of current reading manga", "created_by":1}'
-curl -X POST -d "$BODY" localhost:4000/api/v1/lists
+# Trigger the authentication endpoint
+curl -d "$BODY" http://localhost:4000/api/v1/tokens/authentication
+```
 
+### Step 2: Use the "BEARER TOKEN"
+ ```bash
+# Replace "BEARER_TOKEN" with the token returned in the previous step
+curl -i -H "Authorization: Bearer BEARER_TOKEN" http://localhost:4000/api/v1/healthcheck
+```
 
+### Step 3: fetch a specific user Information **WITHOUTH PASSWORD**
+``` bash
+# Replace ":uid" with the user ID
+curl -i http://localhost:4000/api/v1/users/1
+```
+
+## READING LIST SECTION
+
+### fetch all reading list
+``` bash
+curl -i http://localhost:4000/api/v1/lists
+```
+
+### fetch a specific list
+``` bash
+# Replace ":rl_id" with the reading list ID
+curl -X GET http://localhost:4000/api/v1/lists/:rl_id
+
+```
+
+### create a new reading list
+``` bash
+# Define the request body
+BODY='{"name":"Manga Section","description":"List of current reading manga", "created_by":1}'
+
+# Create the list
+curl -X POST -d "$BODY" http://localhost:4000/api/v1/lists
+```
+
+### Update a reading list
+``` bash
+# Define the request body
+BODY='{"name":"Manga Selection"}'
+
+# Update the list (replace "1" with the list ID)
+curl -X PUT -d "$BODY" http://localhost:4000/api/v1/lists/1
+```
+
+## USER SECTION
+
+### View User Profile 
+
+```bash
+# Replace ":uid" with the user ID
+curl -i http://localhost:4000/api/v1/users/:uid
+```
