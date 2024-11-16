@@ -27,11 +27,13 @@ func (a *applicationDependences) routes() http.Handler {
 	//the following is the method in which we'll wrap all of our endpoints
 	//router.HandlerFunc(http.MethodPost, "/api/v1/SOME ENDPOINT", a.requireActivatedUser(SOME_HANDLER_FUNCTION))
 
-	router.HandlerFunc(http.MethodGet, "/api/v1/users/:uid", a.listUserProfileHandler)
-
 	//READING LISTS SECTION
-	router.HandlerFunc(http.MethodPost, "/api/v1/lists", a.createReadingListHandler)
 	router.HandlerFunc(http.MethodGet, "/api/v1/lists", a.listAllReadingListHandler)
+	router.HandlerFunc(http.MethodGet, "/api/v1/lists/:rl_id", a.getSpecificReadingList)
+	router.HandlerFunc(http.MethodPost, "/api/v1/lists", a.createReadingListHandler)
+
+	//user section
+	router.HandlerFunc(http.MethodGet, "/api/v1/users/:uid", a.listUserProfileHandler)
 
 	return a.recoverPanic(a.rateLimiting(a.authenticate(router)))
 }

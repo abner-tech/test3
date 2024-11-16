@@ -10,10 +10,12 @@ curl -d "$BODY" localhost:4000/api/v1/register/user
 curl -X PUT -d '{"token": "TOKEN VALUE"}' localhost:4000/api/v1/users/activated
 
 
+
+
 //AUTHENTICATE USER
 
 //declaring the body for our request NOTE: replace values with credentials
-BODY='{ "email": "john@example.com", "password": "mangotree"}'
+BODY='{"email": "john@example.com", "password": "mangotree"}'
 
 //triger authentication endpoint: this will return a token, and the expiry date for its use
 curl -d "$BODY" localhost:4000/api/v1/tokens/authentication
@@ -22,10 +24,28 @@ curl -d "$BODY" localhost:4000/api/v1/tokens/authentication
 curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/healthcheck
 //current authorization token for user1: LNHATDTSKLKFVVNTKC4YQ5IFIY
 
-//get user information printes, note that password wont be printed 
+//get user information printed, note that password wont be printed 
  curl -i  http://localhost:4000/api/v1/users/1
 
+
+
+//READING LIST SECTION
+
+//show all lists
+curl -i localhost:4000/api/v1/lists
+
+//show a specific list
+curl -X GET localhost:4000/api/v1/lists/:rl_id
 
 //making a list for the existing user with id 1
 BODY='{"name":"Manga Section","description":"list of current reading manga", "created_by":1}'
 curl -X POST -d "$BODY" localhost:4000/api/v1/lists
+
+
+
+//USER SECTION
+
+//show user profile using the user id
+curl -i localhost:4000/api/v1/users/:uid
+
+

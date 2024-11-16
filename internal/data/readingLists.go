@@ -109,3 +109,43 @@ func (r *ReadingListModel) GetAll(description string, filters Fileters) ([]*Read
 
 	return lists, metadata, nil
 }
+
+func (r *ReadingListModel) GetByID(id int64) (*Reading_List, error) {
+	//check for valid id
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	//query
+	query := `
+	SELECT id, name, description, created_by, created_at, version
+	FROM reading_lists
+	WHERE id = $1
+	`
+
+	//variable to hold row
+	var list Reading_List
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := r.DB.QueryRowContext(ctx, query, id).Scan(
+		&list.ID,
+		&list.Name,
+		&list.Description,
+		&list.CreatedBy,
+		&list.CreatedAt,
+		&list.Version,
+	)
+
+	//check if errors
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &list, nil
+}

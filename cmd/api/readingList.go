@@ -121,3 +121,35 @@ func (a *applicationDependences) listAllReadingListHandler(w http.ResponseWriter
 		return
 	}
 }
+
+// fetches specific reading list using id
+func (a *applicationDependences) getSpecificReadingList(w http.ResponseWriter, r *http.Request) {
+	//get id parameter
+	id, err := a.readIDParam(r, "rl_id")
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	list, err := a.readingListModel.GetByID(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	//display the list
+	data := envelope{
+		"reading list": list,
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}
