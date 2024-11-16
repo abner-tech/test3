@@ -153,3 +153,67 @@ func (a *applicationDependences) getSpecificReadingList(w http.ResponseWriter, r
 		return
 	}
 }
+
+// update a specific reading list
+func (a *applicationDependences) updateReadingList(w http.ResponseWriter, r *http.Request) {
+	id, err := a.readIDParam(r, "rl_id")
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	list, err := a.readingListModel.GetByID(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var incomingData struct {
+		Name        *string `json:"name"`
+		Description *string `json:"description"`
+	}
+
+	err = a.readJSON(w, r, &incomingData)
+	if err != nil {
+		a.badRequestResponse(w, r, err)
+		return
+	}
+
+	//cheking which field has been updated
+	if incomingData.Name != nil {
+		list.Name = *incomingData.Name
+	}
+	if incomingData.Description != nil {
+		list.Description = *incomingData.Description
+	}
+
+	//validate new list values
+	v := validator.New()
+	data.ValidateReadingList(v, list)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	//proceed with updating record
+	err = a.readingListModel.UpdateReadingList(list)
+	if err != nil {
+		println("sdf")
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+
+	data := envelope{
+		"reading_list": list,
+	}
+
+	a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+	}
+}

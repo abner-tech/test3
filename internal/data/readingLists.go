@@ -54,6 +54,7 @@ func (r *ReadingListModel) CreateReadingList(reading_List *Reading_List) error {
 	)
 }
 
+// fetch all reading lists for all users PAGINATION used
 func (r *ReadingListModel) GetAll(description string, filters Fileters) ([]*Reading_List, Metadata, error) {
 	query := fmt.Sprintf(`
 	SELECT COUNT(*) OVER(), id, name, description, created_at, created_by, version
@@ -110,6 +111,7 @@ func (r *ReadingListModel) GetAll(description string, filters Fileters) ([]*Read
 	return lists, metadata, nil
 }
 
+// fetch at most 1 reading list using id
 func (r *ReadingListModel) GetByID(id int64) (*Reading_List, error) {
 	//check for valid id
 	if id < 1 {
@@ -148,4 +150,23 @@ func (r *ReadingListModel) GetByID(id int64) (*Reading_List, error) {
 		}
 	}
 	return &list, nil
+}
+
+// update a reading list using list id
+func (r *ReadingListModel) UpdateReadingList(reading_List *Reading_List) error {
+	query := `
+	UPDATE reading_lists
+	SET name = $1, description = $2, version = version + 1
+	WHERE id = $3
+	RETURNING version
+	`
+
+	args := []any{reading_List.Name, reading_List.Description, reading_List.ID}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return r.DB.QueryRowContext(ctx, query, args...).Scan(
+		&reading_List.Version,
+	)
 }

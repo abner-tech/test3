@@ -31,6 +31,7 @@ func (a *applicationDependences) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/api/v1/lists", a.listAllReadingListHandler)
 	router.HandlerFunc(http.MethodGet, "/api/v1/lists/:rl_id", a.getSpecificReadingList)
 	router.HandlerFunc(http.MethodPost, "/api/v1/lists", a.createReadingListHandler)
+	router.HandlerFunc(http.MethodPut, "/api/v1/lists/:rl_id", a.updateReadingList)
 
 	//user section
 	router.HandlerFunc(http.MethodGet, "/api/v1/users/:uid", a.listUserProfileHandler)
