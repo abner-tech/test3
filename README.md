@@ -1,6 +1,6 @@
 # API Usage Guide
-
-## REGISTER USER
+<details>
+<summary> ## REGISTER USER </summary>
 
 ### Step 1: Register a New User
 ```bash
@@ -16,10 +16,10 @@ curl -d "$BODY" http://localhost:4000/api/v1/register/user
 # Replace "TOKEN_VALUE" with the token sent via email
 curl -X PUT -d '{"token": "TOKEN_VALUE"}' http://localhost:4000/api/v1/users/activated
 ```
+</details>
+<details>
 
-
-
-## AUTHENTICATE THE USER
+<summary> ## AUTHENTICATE THE USER </summary>
 
 ### Step 1: Request authentication by logging in to authentication endpoint
 
@@ -42,8 +42,9 @@ curl -i -H "Authorization: Bearer BEARER_TOKEN" http://localhost:4000/api/v1/hea
 # Replace ":uid" with the user ID
 curl -i http://localhost:4000/api/v1/users/1
 ```
-
-## READING LIST SECTION
+</details>
+<details>
+<summary> ## READING LIST SECTION </summary>
 
 ### fetch all reading list
 ``` bash
@@ -75,7 +76,15 @@ BODY='{"name":"Manga Selection"}'
 curl -X PUT -d "$BODY" http://localhost:4000/api/v1/lists/1
 ```
 
-## USER SECTION
+
+### Delete a reading List
+```bash
+curl -X DELETE localhost:4000/api/v1/lists/:rl_id
+```
+</details>
+
+<details>
+<summary> ## USER SECTION </summary>
 
 ### View User Profile 
 
@@ -83,3 +92,5 @@ curl -X PUT -d "$BODY" http://localhost:4000/api/v1/lists/1
 # Replace ":uid" with the user ID
 curl -i http://localhost:4000/api/v1/users/:uid
 ```
+
+</summary>

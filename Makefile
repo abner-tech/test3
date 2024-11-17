@@ -45,3 +45,7 @@ db/migrations/goto:
 	@echo 'ROlling back to version: ${version}'
 	migrate -path ./migrations -database ${TEST3_DB_DSN} goto ${version}
 
+.PHONY: db/migrations/down
+db/migrations/step_down:
+	@echo 'Reverting migrations ${num} steps back'
+	migrate -path ./migrations -database ${TEST3_DB_DSN} down ${num}
