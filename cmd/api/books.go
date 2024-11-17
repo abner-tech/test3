@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/abner-tech/Test3-Api.git/internal/validator"
 )
 
+// insert book to db
 func (a *applicationDependences) addBookHandler(w http.ResponseWriter, r *http.Request) {
 
 	//var to hold user input data
@@ -57,6 +59,57 @@ func (a *applicationDependences) addBookHandler(w http.ResponseWriter, r *http.R
 	//send 201 code and wata
 	data := envelope{
 		"book": book,
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+// list all books using filters and pagination (optional)
+func (a *applicationDependences) listAllBooksHandler(w http.ResponseWriter, r *http.Request) {
+	//to hold query parameters
+	var queryParameterData struct {
+		Title       string
+		Description string
+		data.Fileters
+	}
+
+	//get query parameters from url
+	queryParameter := r.URL.Query()
+
+	//load the query parameters into the created struct
+	queryParameterData.Title = a.getSingleQueryParameter(queryParameter, "title", "")
+	queryParameterData.Description = a.getSingleQueryParameter(queryParameter, "description", "")
+	v := validator.New()
+
+	queryParameterData.Fileters.Page = a.getSingleIntigerParameter(queryParameter, "page", 1, v)
+	queryParameterData.Fileters.PageSize = a.getSingleIntigerParameter(queryParameter, "page_size", 10, v)
+	queryParameterData.Fileters.Sorting = a.getSingleQueryParameter(queryParameter, "sorting", "id")
+	queryParameterData.Fileters.SortSafeList = []string{"id", "author", "-id", "-author"}
+
+	data.ValidateFilters(v, queryParameterData.Fileters)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	books, metadata, err := a.bookModel.GetAll(queryParameterData.Title, queryParameterData.Description, queryParameterData.Fileters)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+			return
+		default:
+			a.serverErrorResponse(w, r, err)
+			return
+		}
+	}
+	data := envelope{
+		"books":     books,
+		"@metadata": metadata,
 	}
 
 	err = a.writeJSON(w, http.StatusOK, data, nil)

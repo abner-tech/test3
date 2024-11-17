@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -25,6 +26,7 @@ type Book struct {
 	Genre            []string  `json:"genre"`
 	Description      string    `json:"description"`
 	Average_Rating   float32   `json:"average_rating"`
+	Version          int16     `json:"version"`
 }
 
 func ValidateBook(v *validator.Validator, book *Book) {
@@ -77,4 +79,63 @@ func (b *BookModel) Insert(book *Book) error {
 	defer cancel()
 
 	return b.DB.QueryRowContext(ctx, query, args...).Scan(&book.ID, &book.Average_Rating)
+}
+
+// list all books
+func (b *BookModel) GetAll(title, description string, filters Fileters) ([]*Book, Metadata, error) {
+	query := fmt.Sprintf(`
+	SELECT COUNT(*) OVER(), id, title, authors, isbn, publication_date, genre, description, average_rating , version
+	FROM books
+	WHERE (to_tsvector('simple',title) @@
+		plainto_tsquery('simple', $1) OR $1 = '')
+	AND (to_tsvector('simple',description) @@
+		plainto_tsquery('simple', $2) OR $2 = '')
+	ORDER BY %s %s, id ASC
+	LIMIT $3 OFFSET $4
+	`, filters.sortColumn(), filters.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := b.DB.QueryContext(ctx, query, title, description, filters.limit(), filters.offset())
+	//check for errors
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, Metadata{}, err
+		default:
+			return nil, Metadata{}, err
+		}
+	}
+	defer rows.Close()
+	totalRecords := 0
+	books := []*Book{}
+
+	for rows.Next() {
+		var book Book
+		err := rows.Scan(
+			&totalRecords,
+			&book.ID,
+			&book.Title,
+			pq.Array(&book.Authors),
+			&book.ISBN,
+			&book.Publication_Date,
+			pq.Array(&book.Genre),
+			&book.Description,
+			&book.Average_Rating,
+			&book.Version,
+		)
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+		books = append(books, &book)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	//create the metadata
+	metadata := calculateMetaData(totalRecords, filters.Page, filters.PageSize)
+	return books, metadata, nil
 }

@@ -93,7 +93,7 @@ curl -X DELETE localhost:4000/api/v1/lists/:rl_id
 curl -i http://localhost:4000/api/v1/users/:uid
 ```
 
-</summary>
+</details>
 
 <details>
 <summary> ## BOOK SECTION </summary>
