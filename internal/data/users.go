@@ -300,7 +300,6 @@ func (u *UserModel) UserExist(id int64) error {
 	defer cancel()
 
 	var ID int64
-	println(id)
 
 	return u.DB.QueryRowContext(ctx, query, id).Scan(&ID)
 }

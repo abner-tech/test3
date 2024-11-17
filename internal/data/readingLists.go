@@ -170,3 +170,37 @@ func (r *ReadingListModel) UpdateReadingList(reading_List *Reading_List) error {
 		&reading_List.Version,
 	)
 }
+
+// deletre a reading list from the
+func (r *ReadingListModel) DeleteSingleList(id int64) error {
+	//validate id
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+
+	//query
+	query := `
+	DELETE FROM reading_lists
+	WHERE id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	//excecute the query
+	result, err := r.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	//check if any rows affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrRecordNotFound //no rows affected
+	}
+	return nil
+}

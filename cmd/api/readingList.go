@@ -123,7 +123,7 @@ func (a *applicationDependences) listAllReadingListHandler(w http.ResponseWriter
 }
 
 // fetches specific reading list using id
-func (a *applicationDependences) getSpecificReadingList(w http.ResponseWriter, r *http.Request) {
+func (a *applicationDependences) getSpecificReadingListHandler(w http.ResponseWriter, r *http.Request) {
 	//get id parameter
 	id, err := a.readIDParam(r, "rl_id")
 	if err != nil {
@@ -155,7 +155,7 @@ func (a *applicationDependences) getSpecificReadingList(w http.ResponseWriter, r
 }
 
 // update a specific reading list
-func (a *applicationDependences) updateReadingList(w http.ResponseWriter, r *http.Request) {
+func (a *applicationDependences) updateReadingListhandler(w http.ResponseWriter, r *http.Request) {
 	id, err := a.readIDParam(r, "rl_id")
 	if err != nil {
 		a.notFoundResponse(w, r)
@@ -203,7 +203,6 @@ func (a *applicationDependences) updateReadingList(w http.ResponseWriter, r *htt
 	//proceed with updating record
 	err = a.readingListModel.UpdateReadingList(list)
 	if err != nil {
-		println("sdf")
 		a.serverErrorResponse(w, r, err)
 		return
 	}
@@ -213,6 +212,39 @@ func (a *applicationDependences) updateReadingList(w http.ResponseWriter, r *htt
 	}
 
 	a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+// delete a specific reading list
+func (a *applicationDependences) deleteReadingListHander(w http.ResponseWriter, r *http.Request) {
+	//fetch the provided id
+	id, err := a.readIDParam(r, "rl_id")
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	//delete
+	err = a.readingListModel.DeleteSingleList(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	//display the message
+	data := envelope{
+		"messaeg": "list deleted sucessfully",
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 	}
