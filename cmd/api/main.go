@@ -44,6 +44,7 @@ type applicationDependences struct {
 	wg               sync.WaitGroup
 	tokenModel       data.TokenModel
 	readingListModel data.ReadingListModel
+	bookModel        data.BookModel
 }
 
 func main() {
@@ -90,6 +91,7 @@ func main() {
 		mailer:           mailer.New(settings.smtp.host, settings.smtp.port, settings.smtp.username, settings.smtp.password, settings.smtp.sender),
 		tokenModel:       data.TokenModel{DB: db},
 		readingListModel: data.ReadingListModel{DB: db},
+		bookModel:        data.BookModel{DB: db},
 	}
 
 	// apiServer := &http.Server{

@@ -94,3 +94,24 @@ curl -i http://localhost:4000/api/v1/users/:uid
 ```
 
 </summary>
+
+<details>
+<summary> ## BOOK SECTION </summary>
+
+### Inser New Book
+
+```bash 
+#declare body
+BODY='{
+  "title": "Advanced Programming in Go",
+  "author": ["John Doe", "Jane Smith", "Alice Brown"],
+  "isbn": 9781234567890,
+  "publication_date": "2022-05-15T00:00:00Z",
+  "genre": ["Programming", "Technology", "Computer Science"],
+  "description": "A comprehensive guide to advanced programming concepts and techniques in Go."
+}'
+
+curl -X POST -d "$BODY" localhost:4000//api/v1/books
+```
+
+</details>

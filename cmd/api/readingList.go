@@ -42,8 +42,6 @@ func (a *applicationDependences) createReadingListHandler(w http.ResponseWriter,
 	//check if user the list is created for does exists
 	err = a.userModel.UserExist(incomingData.CreatedBy)
 	if err != nil {
-		println(err.Error())
-		//no record exist for the user id provideds
 		a.notFoundResponse(w, r)
 		return
 	}

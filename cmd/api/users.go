@@ -35,7 +35,7 @@ func (a *applicationDependences) registerUserHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	//user valudation
+	//user validation
 	v := validator.New()
 	data.ValidateUser(v, user)
 	if !v.IsEmpty() {
