@@ -1,6 +1,5 @@
 # API Usage Guide
-<details>
-<summary> ## REGISTER USER </summary>
+ ## REGISTER USER
 
 ### Step 1: Register a New User
 ```bash
@@ -16,10 +15,7 @@ curl -d "$BODY" http://localhost:4000/api/v1/register/user
 # Replace "TOKEN_VALUE" with the token sent via email
 curl -X PUT -d '{"token": "TOKEN_VALUE"}' http://localhost:4000/api/v1/users/activated
 ```
-</details>
-<details>
-
-<summary> ## AUTHENTICATE THE USER </summary>
+ ## AUTHENTICATE THE USER
 
 ### Step 1: Request authentication by logging in to authentication endpoint
 
@@ -37,14 +33,12 @@ curl -d "$BODY" http://localhost:4000/api/v1/tokens/authentication
 curl -i -H "Authorization: Bearer BEARER_TOKEN" http://localhost:4000/api/v1/healthcheck
 ```
 
-### Step 3: fetch a specific user Information **WITHOUTH PASSWORD**
+### Step 3: fetch a specific user Information NOTE: not fetching password
 ``` bash
 # Replace ":uid" with the user ID
 curl -i http://localhost:4000/api/v1/users/1
 ```
-</details>
-<details>
-<summary> ## READING LIST SECTION </summary>
+ ## READING LIST SECTION 
 
 ### fetch all reading list
 ``` bash
@@ -81,10 +75,7 @@ curl -X PUT -d "$BODY" http://localhost:4000/api/v1/lists/1
 ```bash
 curl -X DELETE localhost:4000/api/v1/lists/:rl_id
 ```
-</details>
-
-<details>
-<summary> ## USER SECTION </summary>
+## USER SECTION
 
 ### View User Profile 
 
@@ -93,10 +84,7 @@ curl -X DELETE localhost:4000/api/v1/lists/:rl_id
 curl -i http://localhost:4000/api/v1/users/:uid
 ```
 
-</details>
-
-<details>
-<summary> ## BOOK SECTION </summary>
+ ## BOOK SECTION
 
 ### Inser New Book
 
@@ -111,7 +99,18 @@ BODY='{
   "description": "A comprehensive guide to advanced programming concepts and techniques in Go."
 }'
 
-curl -X POST -d "$BODY" localhost:4000//api/v1/books
+curl -X POST -d "$BODY" localhost:4000/api/v1/books
 ```
 
-</details>
+## Fetch all Books with Pagination
+
+```bash 
+curl -i localhost:4000/api/v1/books
+```
+
+## Fetch Book Using ID
+ ```bash
+
+ curl -i localhost:4000/api/v1/books/:b_id
+
+ ```

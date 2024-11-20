@@ -94,16 +94,6 @@ func main() {
 		bookModel:        data.BookModel{DB: db},
 	}
 
-	// apiServer := &http.Server{
-	// 	Addr:         fmt.Sprintf(":%d", settings.port),
-	// 	Handler:      appInstance.routes(),
-	// 	IdleTimeout:  time.Minute,
-	// 	ReadTimeout:  5 * time.Second,
-	// 	WriteTimeout: 10 * time.Second,
-	// 	ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
-	// }
-
-	// logger.Info("Starting Server", "address", apiServer.Addr, "environment", settings.environment, "limiter-enabled", settings.limiter)
 	err = appInstance.serve()
 	if err != nil {
 		logger.Error(err.Error())

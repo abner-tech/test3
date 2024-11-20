@@ -139,3 +139,41 @@ func (b *BookModel) GetAll(title, description string, filters Fileters) ([]*Book
 	metadata := calculateMetaData(totalRecords, filters.Page, filters.PageSize)
 	return books, metadata, nil
 }
+
+// fetch from database using id
+func (b *BookModel) GetByID(id int64) (*Book, error) {
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	query := `
+	SELECT title, authors, isbn, publication_date, genre, description, average_rating, version
+	FROM books
+	WHERE id = $1
+	`
+	var book Book
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := b.DB.QueryRowContext(ctx, query, id).Scan(
+		&book.Title,
+		pq.Array(&book.Authors),
+		&book.ISBN,
+		&book.Publication_Date,
+		pq.Array(&book.Genre),
+		&book.Description,
+		&book.Average_Rating,
+		&book.Version,
+	)
+	//check if errors
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &book, nil
+}

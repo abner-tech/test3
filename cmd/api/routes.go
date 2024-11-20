@@ -40,6 +40,7 @@ func (a *applicationDependences) routes() http.Handler {
 	//BOOKS SECTION
 	router.HandlerFunc(http.MethodGet, "/api/v1/books", a.listAllBooksHandler)
 	router.HandlerFunc(http.MethodPost, "/api/v1/books", a.addBookHandler)
+	router.HandlerFunc(http.MethodGet, "/api/v1/books/:b_id", a.listSpecificBookHandler)
 
 	return a.recoverPanic(a.rateLimiting(a.authenticate(router)))
 }

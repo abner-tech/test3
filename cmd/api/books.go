@@ -118,3 +118,35 @@ func (a *applicationDependences) listAllBooksHandler(w http.ResponseWriter, r *h
 		return
 	}
 }
+
+// list 1 book using is
+func (a *applicationDependences) listSpecificBookHandler(w http.ResponseWriter, r *http.Request) {
+	//get id parameter
+	id, err := a.readIDParam(r, "b_id")
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	book, err := a.bookModel.GetByID(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	//display the list
+	data := envelope{
+		"book": book,
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}
