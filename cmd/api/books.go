@@ -150,3 +150,86 @@ func (a *applicationDependences) listSpecificBookHandler(w http.ResponseWriter, 
 		return
 	}
 }
+
+// function to update
+func (a *applicationDependences) updateBookDetailsHandlers(w http.ResponseWriter, r *http.Request) {
+	//get id parameter
+	id, err := a.readIDParam(r, "b_id")
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	//fetch previouse record infomration
+	book, err := a.bookModel.GetByID(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var incomingData struct {
+		Title            *string    `json:"title"`
+		Authors          *[]string  `json:"authors"`
+		ISBN             *int64     `json:"isbn"`
+		Publication_date *time.Time `json:"publication_date"`
+		Genre            *[]string  `json:"genre"`
+		Description      *string    `json:"description"`
+	}
+
+	err = a.readJSON(w, r, &incomingData)
+	if err != nil {
+		a.badRequestResponse(w, r, err)
+		return
+	}
+
+	//check for updated fields
+	if incomingData.Title != nil {
+		book.Title = *incomingData.Title
+	}
+
+	if incomingData.Authors != nil {
+		book.Authors = *incomingData.Authors
+	}
+	if incomingData.ISBN != nil {
+		book.ISBN = *incomingData.ISBN
+	}
+	if incomingData.Publication_date != nil {
+		book.Publication_Date = *incomingData.Publication_date
+	}
+	if incomingData.Genre != nil {
+		book.Genre = *incomingData.Genre
+	}
+	if incomingData.Description != nil {
+		book.Description = *incomingData.Description
+	}
+
+	//validate content sent
+	v := validator.New()
+	data.ValidateBook(v, book)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = a.bookModel.UpdateBook(book)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+
+	//display the book
+	data := envelope{
+		"book": book,
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}

@@ -177,3 +177,29 @@ func (b *BookModel) GetByID(id int64) (*Book, error) {
 	}
 	return &book, nil
 }
+
+// update a book record
+func (b *BookModel) UpdateBook(book *Book) error {
+	query := `
+	UPDATE books
+	SET title = $1, authors = $2, isbn =$3, publication_date = $4, genre = $5, description = $6
+	WHERE id = $7
+	RETURNING version
+	`
+	args := []any{
+		book.Title,
+		pq.Array(book.Authors),
+		book.ISBN,
+		book.Publication_Date,
+		pq.Array(book.Genre),
+		book.Description,
+		book.Version,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return b.DB.QueryRowContext(ctx, query, args...).Scan(
+		&book.Version,
+	)
+}
