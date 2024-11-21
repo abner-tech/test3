@@ -11,3 +11,5 @@ var ErrRecordNotFound = errors.New("record not found")
 var ErrDuplicateEmail = errors.New("duplicate email encountered")
 
 var ErrEditConfilct = errors.New("edit confict")
+
+var ErrDuplicateBookInList = errors.New("duplicate book in reading list")

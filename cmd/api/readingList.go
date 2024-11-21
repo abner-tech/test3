@@ -247,3 +247,80 @@ func (a *applicationDependences) deleteReadingListHander(w http.ResponseWriter, 
 		a.serverErrorResponse(w, r, err)
 	}
 }
+
+// add a book to users reading list
+func (a *applicationDependences) addBookToReadingListHandler(w http.ResponseWriter, r *http.Request) {
+	//create a struct to hold a list
+	var incomingData struct {
+		Book_ID int64  `json:"book_id"`
+		Status  string `json:"status"`
+	}
+
+	//get list id parameter
+	id, err := a.readIDParam(r, "rl_id")
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	//decode
+	err = a.readJSON(w, r, &incomingData)
+	if err != nil {
+		a.badRequestResponse(w, r, err)
+		return
+	}
+
+	bookInList := &data.BookInList{
+		Reading_List_ID: id,
+		Book_ID:         incomingData.Book_ID,
+		Status:          incomingData.Status,
+	}
+
+	//validate status
+	v := validator.New()
+	data.ValidateReadingStatus(v, incomingData.Status)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	//check if reading list exist
+	err = a.readingListModel.ReadingListExist(id)
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	//check if book exist
+	err = a.bookModel.BookExists(incomingData.Book_ID)
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	//procede to insert to DB
+	err = a.readingListModel.AddBookToReadingList(bookInList)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrDuplicateBookInList):
+			v.AddError("book", data.ErrDuplicateBookInList.Error())
+			a.failedValidationResponse(w, r, v.Errors)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/api/v1/lists/%d/books", incomingData.Book_ID))
+
+	data := envelope{
+		"added_Book": bookInList,
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}

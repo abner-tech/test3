@@ -33,6 +33,7 @@ func (a *applicationDependences) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/api/v1/lists", a.createReadingListHandler)
 	router.HandlerFunc(http.MethodPut, "/api/v1/lists/:rl_id", a.updateReadingListhandler)
 	router.HandlerFunc(http.MethodDelete, "/api/v1/lists/:rl_id", a.deleteReadingListHander)
+	router.HandlerFunc(http.MethodPost, "/api/v1/lists/:rl_id/books", a.addBookToReadingListHandler)
 
 	//user section
 	router.HandlerFunc(http.MethodGet, "/api/v1/users/:uid", a.listUserProfileHandler)

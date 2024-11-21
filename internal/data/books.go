@@ -232,14 +232,15 @@ func (b *BookModel) DeleteBook(id int64) error {
 
 // list all books
 func (b *BookModel) SearchGetAll(title, author, genre string, filters Fileters) ([]*Book, Metadata, error) {
+
 	query := fmt.Sprintf(`
-SELECT COUNT(*) OVER(), id, title, authors, isbn, publication_date, genre, description, average_rating, version
-FROM books
-WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
-  AND (to_tsvector('simple', array_to_string(authors, ' ')) @@ plainto_tsquery('simple', $2) OR $2 = '')
-  AND (to_tsvector('simple', array_to_string(genre, ' ')) @@ plainto_tsquery('simple', $3) OR $3 = '')
-ORDER BY %s %s, id ASC
-LIMIT $4 OFFSET $5;
+	SELECT COUNT(*) OVER(), id, title, authors, isbn, publication_date, genre, description, average_rating, version
+	FROM books
+	WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
+	  AND (to_tsvector('simple', array_to_string(authors, ' ')) @@ plainto_tsquery('simple', $2) OR $2 = '')
+	  AND (to_tsvector('simple', array_to_string(genre, ' ')) @@ plainto_tsquery('simple', $3) OR $3 = '')
+	ORDER BY %s %s, id ASC
+	LIMIT $4 OFFSET $5;
 	`, filters.sortColumn(), filters.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -286,4 +287,22 @@ LIMIT $4 OFFSET $5;
 	//create the metadata
 	metadata := calculateMetaData(totalRecords, filters.Page, filters.PageSize)
 	return books, metadata, nil
+}
+
+func (b *BookModel) BookExists(id int64) error {
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+
+	query := `
+	SELECT id 
+	FROM books
+	WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var ID int64
+
+	return b.DB.QueryRowContext(ctx, query, id).Scan(&ID)
 }

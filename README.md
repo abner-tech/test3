@@ -75,6 +75,23 @@ curl -X PUT -d "$BODY" http://localhost:4000/api/v1/lists/1
 ```bash
 curl -X DELETE localhost:4000/api/v1/lists/:rl_id
 ```
+
+### Add book to reading list
+```bash
+
+#replace book_id and status field with valid id(int) and status(string) values
+#status values can only be: ' currently reading' or 'completed'
+
+BODY='{
+  "book_id":BOOK_ID, 
+  "status":STATUS
+}'
+
+
+#replace :rl_id with the id or list book is being added to
+curl -X POST localhost:4000/api/v1/lists/:rl_id/books -d
+```
+
 ## USER SECTION
 
 ### View User Profile 
@@ -114,3 +131,35 @@ curl -i localhost:4000/api/v1/books
  curl -i localhost:4000/api/v1/books/:b_id
 
  ```
+
+ ## Update Book Using ID
+```bash
+BODY='{
+  "title": "Advanced Programming USING GO",
+  "author": ["John Doe", "Jane Smith", "Alice Brown"],
+  "isbn": 9781234567890,
+  "publication_date": "2022-05-15T00:00:00Z",
+  "genre": ["Programming", "Technology", "Computer Science"],
+  "description": "A comprehensive guide to advanced programming concepts and techniques in Go."
+}'
+
+#replace 'b_id' with book value
+ curl -X PUT localhost:4000/api/v1/books/b_id -d "BODY"
+
+ ```
+
+## Delete a Book
+```bash
+#replace 'b_id' with book value
+ curl -X DELETE localhost:4000/api/v1/books/b_id
+```
+
+## Search Book By author/title/genre
+```bash
+# replace TITLE/GENRE/AUTHOR with query parameter
+curl -i localhost:4000/api/v1/book/search?title=TITLE
+
+curl -i localhost:4000/api/v1/book/search?author=AUTHOR
+
+curl -i localhost:4000/api/v1/book/search?genre=GENRE
+```

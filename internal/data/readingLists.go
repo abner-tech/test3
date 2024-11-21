@@ -24,6 +24,14 @@ type Reading_List struct {
 	Version     int16     `json:"version"`
 }
 
+type BookInList struct {
+	Reading_List_ID int64     `json:"reading_list_id"`
+	Book_ID         int64     `json:"book_id"`
+	Status          string    `json:"status"`
+	Created_at      time.Time `json:"created_at"`
+	Version         int16     `json:"version"`
+}
+
 // validate provided content for list being created
 func ValidateReadingList(v *validator.Validator, reading_List *Reading_List) {
 	//check if name is empty or too long
@@ -33,6 +41,14 @@ func ValidateReadingList(v *validator.Validator, reading_List *Reading_List) {
 	//verifying
 	v.Check(reading_List.Description != "", "description", "must not be empty")
 	v.Check(len(reading_List.Description) <= 250, "description", "must not be more than 250 bytes long")
+}
+
+// validate if status for book being added to reading list is correct
+func ValidateReadingStatus(v *validator.Validator, readingStatus string) {
+	v.Check(readingStatus != "", "status", "must be provided")
+	v.Check(readingStatus == "currently reading" || readingStatus == "completed",
+		"status",
+		"status must be of values 'completed' or 'currently reading'")
 }
 
 // create the list for the user
@@ -202,5 +218,54 @@ func (r *ReadingListModel) DeleteSingleList(id int64) error {
 	if rowsAffected == 0 {
 		return ErrRecordNotFound //no rows affected
 	}
+	return nil
+}
+
+// check if reading list exists
+func (b *ReadingListModel) ReadingListExist(id int64) error {
+
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+
+	query := `
+	SELECT id 
+	FROM reading_lists
+	WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var ID int64
+
+	return b.DB.QueryRowContext(ctx, query, id).Scan(&ID)
+}
+
+// adding book to reading list
+func (b *ReadingListModel) AddBookToReadingList(book *BookInList) error {
+	query := `
+	INSERT INTO reading_list_books(reading_list_id, book_id, status)
+	VALUES($1, $2, $3)
+	RETURNING created_at, version
+	`
+	args := []any{book.Reading_List_ID, book.Book_ID, book.Status}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := b.DB.QueryRowContext(ctx, query, args...).Scan(
+		&book.Created_at,
+		&book.Version,
+	)
+
+	if err != nil {
+		switch {
+		case err.Error() == `pq: duplicate key value violates unique constraint "reading_list_books_pkey"`:
+			return ErrDuplicateBookInList
+		default:
+			return err
+		}
+	}
+
 	return nil
 }
