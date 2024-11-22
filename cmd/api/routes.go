@@ -47,5 +47,8 @@ func (a *applicationDependences) routes() http.Handler {
 	router.HandlerFunc(http.MethodDelete, "/api/v1/books/:b_id", a.deleteBookHandler)
 	router.HandlerFunc(http.MethodGet, "/api/v1/book/search", a.searchOnBooksHandler)
 
+	//REVIEWS SECTION
+	router.HandlerFunc(http.MethodPost, "/api/v1/books/:r_id/reviews",a.addReviewForBooksHandler)
+
 	return a.recoverPanic(a.rateLimiting(a.authenticate(router)))
 }

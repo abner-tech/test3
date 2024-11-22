@@ -45,6 +45,7 @@ type applicationDependences struct {
 	tokenModel       data.TokenModel
 	readingListModel data.ReadingListModel
 	bookModel        data.BookModel
+	reviewModel      data.ReviewModel
 }
 
 func main() {
@@ -92,6 +93,7 @@ func main() {
 		tokenModel:       data.TokenModel{DB: db},
 		readingListModel: data.ReadingListModel{DB: db},
 		bookModel:        data.BookModel{DB: db},
+		reviewModel:      data.ReviewModel{DB: db},
 	}
 
 	err = appInstance.serve()
