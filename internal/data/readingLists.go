@@ -269,3 +269,30 @@ func (b *ReadingListModel) AddBookToReadingList(book *BookInList) error {
 
 	return nil
 }
+
+func (b *ReadingListModel) DeleteBookFromReadingList(bookID, listID int64) error {
+	query := `
+	DELETE FROM reading_list_books
+	WHERE reading_list_id = $1 AND book_id = $2
+	`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	//excecute the query
+	result, err := b.DB.ExecContext(ctx, query, listID, bookID)
+	if err != nil {
+		return err
+	}
+
+	//check if any rows affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrRecordNotFound //no rows affected
+	}
+	return nil
+
+}

@@ -324,3 +324,59 @@ func (a *applicationDependences) addBookToReadingListHandler(w http.ResponseWrit
 		return
 	}
 }
+
+func (a *applicationDependences) deleteBookInReadingListHandler(w http.ResponseWriter, r *http.Request) {
+	//fetch the list book belongs to id
+	list_id, err := a.readIDParam(r, "rl_id")
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	var incomingData struct {
+		Book_ID int64 `json:"book_id"`
+	}
+
+	//get book it
+	err = a.readJSON(w, r, &incomingData)
+	if err != nil {
+		a.badRequestResponse(w, r, err)
+		return
+	}
+
+	//check if book exists
+	err = a.bookModel.BookExists(incomingData.Book_ID)
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	//check if reading list exists
+	err = a.readingListModel.ReadingListExist(list_id)
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	//procede to delete book from reading list
+	err = a.readingListModel.DeleteBookFromReadingList(incomingData.Book_ID, list_id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+	//display the message
+	data := envelope{
+		"messaeg": "book removed from list sucessfully",
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+	}
+
+}

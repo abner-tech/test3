@@ -92,6 +92,17 @@ BODY='{
 curl -X POST localhost:4000/api/v1/lists/:rl_id/books -d
 ```
 
+### Delete Book from a reading list
+```bash
+#define data being sent
+BODY='{
+  "book_id": BOOK ID
+}'
+
+#replace :rl_id with reading list book belongs to
+curl -X DELETE -d "$BODY" localhost:4000/api/v1/lists/:rl_id/books
+```
+
 ## USER SECTION
 
 ### View User Profile 
