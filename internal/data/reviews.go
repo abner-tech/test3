@@ -3,6 +3,8 @@ package data
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/abner-tech/Test3-Api.git/internal/validator"
@@ -52,4 +54,56 @@ func (r *ReviewModel) InsertReview(review *Review) error {
 		&review.Created_at,
 		&review.Version,
 	)
+}
+
+func (r *ReviewModel) GetAllReviews(filters Fileters) ([]*Review, Metadata, error) {
+	query := fmt.Sprintf(`
+	SELECT COUNT(*) OVER(), id, book_id, user_name, rating, review_text, helpful_count, created_at, version
+	FROM reviews
+	ORDER BY %s %s, id ASC
+	LIMIT $1 OFFSET $2
+	`, filters.sortColumn(), filters.sortDirection())
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := r.DB.QueryContext(ctx, query, filters.limit(), filters.offset())
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, Metadata{}, err
+		default:
+			return nil, Metadata{}, err
+		}
+	}
+	defer rows.Close()
+	totalRecords := 0
+
+	reviews := []*Review{}
+
+	for rows.Next() {
+		var review Review
+		err := rows.Scan(
+			&totalRecords,
+			&review.ID,
+			&review.Book_ID,
+			&review.User_name,
+			&review.Rating,
+			&review.ReviewText,
+			&review.HelpfulCount,
+			&review.Created_at,
+			&review.Version,
+		)
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+		reviews = append(reviews, &review)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	//create the metadata
+	metadata := calculateMetaData(totalRecords, filters.Page, filters.PageSize)
+	return reviews, metadata, nil
 }

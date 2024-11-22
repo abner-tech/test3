@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -57,6 +58,68 @@ func (a *applicationDependences) addReviewForBooksHandler(w http.ResponseWriter,
 	//send 201 code and wata
 	data := envelope{
 		"review": review,
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (a *applicationDependences) deleteReviewForBookHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (a *applicationDependences) listAllReviewsForBookHandler(w http.ResponseWriter, r *http.Request) {
+	//to hold query parameters
+	var queryParameterData struct {
+		data.Fileters
+	}
+
+	//get query parameters from url
+	queryParameter := r.URL.Query()
+
+	v := validator.New()
+
+	queryParameterData.Fileters.Page = a.getSingleIntigerParameter(queryParameter, "page", 1, v)
+	queryParameterData.Fileters.PageSize = a.getSingleIntigerParameter(queryParameter, "page_size", 10, v)
+	queryParameterData.Fileters.Sorting = a.getSingleQueryParameter(queryParameter, "sorting", "id")
+	queryParameterData.Fileters.SortSafeList = []string{"id", "-id"}
+
+	data.ValidateFilters(v, queryParameterData.Fileters)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	book_id, err := a.readIDParam(r, "rb_id")
+	if err != nil || book_id < 1 {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	err = a.bookModel.BookExists(book_id)
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	reviews, metadata, err := a.reviewModel.GetAllReviews(queryParameterData.Fileters)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+			return
+		default:
+			a.serverErrorResponse(w, r, err)
+			return
+		}
+	}
+
+	data := envelope{
+		"reviews":   reviews,
+		"@metadata": metadata,
 	}
 
 	err = a.writeJSON(w, http.StatusOK, data, nil)
