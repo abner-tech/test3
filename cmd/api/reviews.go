@@ -128,3 +128,68 @@ func (a *applicationDependences) listAllReviewsForBookHandler(w http.ResponseWri
 		return
 	}
 }
+
+func (a *applicationDependences) updateReviewForBookHandler(w http.ResponseWriter, r *http.Request) {
+	review_id, err := a.readIDParam(r, "r_id")
+	if err != nil || review_id < 1 {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	review, err := a.reviewModel.GetByID(review_id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var incomingData struct {
+		Rating     *float32 `json:"rating"`
+		ReviewText *string  `json:"review_text"`
+	}
+
+	err = a.readJSON(w, r, &incomingData)
+	if err != nil {
+		a.badRequestResponse(w, r, err)
+		return
+	}
+
+	if incomingData.Rating != nil {
+		review.Rating = *incomingData.Rating
+	}
+
+	if incomingData.ReviewText != nil {
+		review.ReviewText = *incomingData.ReviewText
+	}
+
+	v := validator.New()
+	data.ValidateReview(v, review)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	//continue with update
+	err = a.reviewModel.UpdateReview(review)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrEditConfilct):
+			a.editConflictResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	data := envelope{
+		"review": review,
+	}
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+	}
+}

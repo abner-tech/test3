@@ -107,3 +107,55 @@ func (r *ReviewModel) GetAllReviews(filters Fileters) ([]*Review, Metadata, erro
 	metadata := calculateMetaData(totalRecords, filters.Page, filters.PageSize)
 	return reviews, metadata, nil
 }
+
+func (r *ReviewModel) GetByID(id int64) (*Review, error) {
+	query := `
+	SELECT id, book_id, user_name, rating, review_text, helpful_count, created_at, version
+	FROM reviews
+	WHERE id = $1
+	`
+
+	var review Review
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := r.DB.QueryRowContext(ctx, query, id).Scan(
+		&review.ID,
+		&review.Book_ID,
+		&review.User_name,
+		&review.Rating,
+		&review.ReviewText,
+		&review.HelpfulCount,
+		&review.Created_at,
+		&review.Version,
+	)
+
+	//check if errors
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &review, nil
+
+}
+
+func (r ReviewModel) UpdateReview(review *Review) error {
+	query := `
+	UPDATE reviews
+	SET rating = $1, review_text=$2, version=version+1
+	WHERE id=$3 AND book_id=$4 AND version=$5
+	RETURNING version
+	`
+	args := []any{review.Rating, review.ReviewText, review.ID, review.Book_ID, review.Version}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return r.DB.QueryRowContext(ctx, query, args...).Scan(
+		&review.Version,
+	)
+}
