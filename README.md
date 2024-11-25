@@ -15,6 +15,7 @@ curl -d "$BODY" http://localhost:4000/api/v1/register/user
 # Replace "TOKEN_VALUE" with the token sent via email
 curl -X PUT -d '{"token": "TOKEN_VALUE"}' http://localhost:4000/api/v1/users/activated
 ```
+
  ## AUTHENTICATE THE USER
 
 ### Step 1: Request authentication by logging in to authentication endpoint
@@ -38,6 +39,7 @@ curl -i -H "Authorization: Bearer BEARER_TOKEN" http://localhost:4000/api/v1/hea
 # Replace ":uid" with the user ID
 curl -i http://localhost:4000/api/v1/users/1
 ```
+
  ## READING LIST SECTION 
 
 ### fetch all reading list
@@ -103,7 +105,7 @@ BODY='{
 curl -X DELETE -d "$BODY" localhost:4000/api/v1/lists/:rl_id/books
 ```
 
-## USER SECTION
+ ## USER SECTION
 
 ### View User Profile 
 
@@ -113,6 +115,7 @@ curl -i http://localhost:4000/api/v1/users/:uid
 ```
 
  ## BOOK SECTION
+ 
 
 ### Inser New Book
 
@@ -130,20 +133,20 @@ BODY='{
 curl -X POST -d "$BODY" localhost:4000/api/v1/books
 ```
 
-## Fetch all Books with Pagination
+### Fetch all Books with Pagination
 
 ```bash 
 curl -i localhost:4000/api/v1/books
 ```
 
-## Fetch Book Using ID
+### Fetch Book Using ID
  ```bash
 
  curl -i localhost:4000/api/v1/books/:b_id
 
  ```
 
- ## Update Book Using ID
+ ### Update Book Using ID
 ```bash
 BODY='{
   "title": "Advanced Programming USING GO",
@@ -159,13 +162,13 @@ BODY='{
 
  ```
 
-## Delete a Book
+### Delete a Book
 ```bash
 #replace 'b_id' with book value
  curl -X DELETE localhost:4000/api/v1/books/b_id
 ```
 
-## Search Book By author/title/genre
+### Search Book By author/title/genre
 ```bash
 # replace TITLE/GENRE/AUTHOR with query parameter
 curl -i localhost:4000/api/v1/book/search?title=TITLE
@@ -174,3 +177,38 @@ curl -i localhost:4000/api/v1/book/search?author=AUTHOR
 
 curl -i localhost:4000/api/v1/book/search?genre=GENRE
 ```
+
+ ## REVIEWS SECTION
+
+ ### Add review for a book
+
+ ```bash
+
+ #change values before using
+  BODY='{
+  "user_name":"USR NAME HERE",
+  "rating":RATING HERE IN INT TYPE,
+  "review-text":"MESSAGE HERE",
+  }'
+
+#replace :book_id with book id number
+  curl -X POST -d "$BPDY" localhost:4000/api/v1/books/:book_id/reviews
+ ``` 
+
+ ### Get all reviews for a book
+
+```bash
+#replace BOOK_ID with valid book id
+  curl -i localhost:4000/api/v1//books/BOOK_ID/reviews
+```
+
+ ### Update a review for a specific book
+
+ ```bash
+  #declare body content
+  BODY='{"review_text":"MESSAGE", "rating":RATING IN INT or FLOAT}'
+
+
+  #REPLACE REV_ID with valid review id
+  curl -X PUT -d "$BODY" localhost:4000/api/v1//reviews/REV_ID
+ ```
