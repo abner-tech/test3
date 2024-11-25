@@ -188,7 +188,7 @@ curl -i localhost:4000/api/v1/book/search?genre=GENRE
   BODY='{
   "user_name":"USR NAME HERE",
   "rating":RATING HERE IN INT TYPE,
-  "review-text":"MESSAGE HERE",
+  "review_text":"MESSAGE HERE"
   }'
 
 #replace :book_id with book id number
@@ -211,4 +211,11 @@ curl -i localhost:4000/api/v1/book/search?genre=GENRE
 
   #REPLACE REV_ID with valid review id
   curl -X PUT -d "$BODY" localhost:4000/api/v1//reviews/REV_ID
+ ```
+
+ ### Delete a reciew for a book
+
+ ```bash
+ #replace BOOK_ID with valid review id
+curl -X DELETE localhost:4000/api/v1_/books/BOOK_ID
  ```

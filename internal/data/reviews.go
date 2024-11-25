@@ -144,7 +144,7 @@ func (r *ReviewModel) GetByID(id int64) (*Review, error) {
 
 }
 
-func (r ReviewModel) UpdateReview(review *Review) error {
+func (r *ReviewModel) UpdateReview(review *Review) error {
 	query := `
 	UPDATE reviews
 	SET rating = $1, review_text=$2, version=version+1
@@ -158,4 +158,35 @@ func (r ReviewModel) UpdateReview(review *Review) error {
 	return r.DB.QueryRowContext(ctx, query, args...).Scan(
 		&review.Version,
 	)
+}
+
+func (r *ReviewModel) DeleteReview(id int64) error {
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+
+	query := `
+	DELETE FROM reviews
+	WHERE id = $1
+	`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	//excecute the query
+	result, err := r.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	//check if any rows affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrRecordNotFound //no rows affected
+	}
+
+	return nil
 }

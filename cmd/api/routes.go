@@ -49,7 +49,7 @@ func (a *applicationDependences) routes() http.Handler {
 
 	//REVIEWS SECTION
 	router.HandlerFunc(http.MethodPost, "/api/v1/books/:r_id/reviews", a.addReviewForBooksHandler)
-	//router.HandlerFunc(http.MethodDelete, "/api/v1/books/:r_id/reviews", a.deleteReviewForBookHandler)
+	router.HandlerFunc(http.MethodDelete, "/api/v1/reviews/:r_id", a.deleteReviewForBookHandler)
 	router.HandlerFunc(http.MethodGet, "/api/v_1/books/:rb_id/reviews", a.listAllReviewsForBookHandler)
 	router.HandlerFunc(http.MethodPut, "/api/v1/reviews/:r_id", a.updateReviewForBookHandler)
 

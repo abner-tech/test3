@@ -68,7 +68,33 @@ func (a *applicationDependences) addReviewForBooksHandler(w http.ResponseWriter,
 }
 
 func (a *applicationDependences) deleteReviewForBookHandler(w http.ResponseWriter, r *http.Request) {
+	//retch review id to delete
+	revID, err := a.readIDParam(r, "r_id")
+	if err != nil || revID < 1 {
+		a.notFoundResponse(w, r)
+		return
+	}
 
+	err = a.reviewModel.DeleteReview(revID)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	//display the message
+	data := envelope{
+		"messaeg": "review deleted sucessfully",
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+	}
 }
 
 func (a *applicationDependences) listAllReviewsForBookHandler(w http.ResponseWriter, r *http.Request) {
