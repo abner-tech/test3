@@ -23,6 +23,7 @@ func (a *applicationDependences) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/api/v1/register/user", a.registerUserHandler)
 	router.HandlerFunc(http.MethodPut, "/api/v1/users/activated", a.activateUserHandler)
 	router.HandlerFunc(http.MethodPost, "/api/v1/tokens/authentication", a.createAuthenticationTokenHandler)
+	router.HandlerFunc(http.MethodGet, "/api/v1/user/:u_id/lists", a.listUsersReadingLists)
 
 	//the following is the method in which we'll wrap all of our endpoints
 	//router.HandlerFunc(http.MethodPost, "/api/v1/SOME ENDPOINT", a.requireActivatedUser(SOME_HANDLER_FUNCTION))

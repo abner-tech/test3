@@ -32,6 +32,16 @@ type BookInList struct {
 	Version         int16     `json:"version"`
 }
 
+type Merged_Reading_List struct {
+	ID          int64         `json:"id"`
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	CreatedBy   int64         `json:"created_by"`
+	CreatedAt   time.Time     `json:"created_at"`
+	Version     int           `json:"version"`
+	Books       []*BookInList `json:"books"` // New field for books
+}
+
 // validate provided content for list being created
 func ValidateReadingList(v *validator.Validator, reading_List *Reading_List) {
 	//check if name is empty or too long
@@ -86,12 +96,7 @@ func (r *ReadingListModel) GetAll(description string, filters Fileters) ([]*Read
 	rows, err := r.DB.QueryContext(ctx, query, description, filters.limit(), filters.offset())
 	//checking for errors
 	if err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
-			return nil, Metadata{}, err
-		default:
-			return nil, Metadata{}, err
-		}
+		return nil, Metadata{}, err
 	}
 
 	defer rows.Close()
@@ -295,4 +300,107 @@ func (b *ReadingListModel) DeleteBookFromReadingList(bookID, listID int64) error
 	}
 	return nil
 
+}
+
+// fetch at most 1 reading list using id
+func (r *ReadingListModel) GetByUserID(userID int64) ([]*Merged_Reading_List, error) {
+	//check for valid id
+	if userID < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	//query
+	query := `
+	SELECT id, name, description, created_by, created_at, version
+	FROM reading_lists
+	WHERE created_by = $1
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := r.DB.QueryContext(ctx, query, userID)
+	if err != nil {
+
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	lists := []*Merged_Reading_List{}
+	for rows.Next() {
+		var row Merged_Reading_List
+		err := rows.Scan(
+			&row.ID,
+			&row.Name,
+			&row.Description,
+			&row.CreatedBy,
+			&row.CreatedAt,
+			&row.Version,
+		)
+		if err != nil {
+			return nil, err
+		}
+		lists = append(lists, &row)
+	}
+
+	//check if errors
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return lists, nil
+}
+
+func (r *ReadingListModel) GetBooksInList(list_ID int64) ([]*BookInList, error) {
+
+	query := `
+	SELECT reading_list_id, book_id, status, created_at, version
+	FROM reading_list_books
+	WHERE reading_list_id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := r.DB.QueryContext(ctx, query, list_ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	books := []*BookInList{}
+
+	for rows.Next() {
+		var row BookInList
+		err := rows.Scan(
+			&row.Reading_List_ID,
+			&row.Book_ID,
+			&row.Status,
+			&row.Created_at,
+			&row.Version,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+		books = append(books, &row)
+	}
+
+	//check if errors
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return books, nil
 }

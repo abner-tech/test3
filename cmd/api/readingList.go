@@ -378,5 +378,49 @@ func (a *applicationDependences) deleteBookInReadingListHandler(w http.ResponseW
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 	}
+}
 
+func (a *applicationDependences) listUsersReadingLists(w http.ResponseWriter, r *http.Request) {
+	userID, err := a.readIDParam(r, "u_id")
+	if err != nil || userID < 1 {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	lists, err := a.readingListModel.GetByUserID(userID)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	for _, list := range lists {
+		book, err := a.readingListModel.GetBooksInList(list.ID)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				a.notFoundResponse(w, r)
+			default:
+				a.serverErrorResponse(w, r, err)
+			}
+			return
+		}
+		list.Books = book
+	}
+
+	//booksInList, err := a.readingListModel.GetBooksInList()
+
+	data := envelope{
+		"reading list": lists,
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
 }
