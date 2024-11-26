@@ -37,20 +37,20 @@ curl -i -H "Authorization: Bearer BEARER_TOKEN" http://localhost:4000/api/v1/hea
 ### Step 3: fetch a specific user Information NOTE: not fetching password
 ``` bash
 # Replace ":uid" with the user ID
-curl -i http://localhost:4000/api/v1/users/1
+curl -i -H "Authorization: Bearer BEARER_TOKEN" http://localhost:4000/api/v1/users/1
 ```
 
  ## READING LIST SECTION 
 
 ### fetch all reading list
 ``` bash
-curl -i http://localhost:4000/api/v1/lists
+curl -i -H "Authorization: Bearer BEARER_TOKEN" http://localhost:4000/api/v1/lists
 ```
 
 ### fetch a specific list
 ``` bash
 # Replace ":rl_id" with the reading list ID
-curl -X GET http://localhost:4000/api/v1/lists/:rl_id
+curl -X GET -H "Authorization: Bearer BEARER_TOKEN" http://localhost:4000/api/v1/lists/:rl_id
 
 ```
 
@@ -60,7 +60,7 @@ curl -X GET http://localhost:4000/api/v1/lists/:rl_id
 BODY='{"name":"Manga Section","description":"List of current reading manga", "created_by":1}'
 
 # Create the list
-curl -X POST -d "$BODY" http://localhost:4000/api/v1/lists
+curl -X POST -d "$BODY"-H "Authorization: Bearer BEARER_TOKEN" http://localhost:4000/api/v1/lists
 ```
 
 ### Update a reading list
@@ -69,13 +69,13 @@ curl -X POST -d "$BODY" http://localhost:4000/api/v1/lists
 BODY='{"name":"Manga Selection"}'
 
 # Update the list (replace "1" with the list ID)
-curl -X PUT -d "$BODY" http://localhost:4000/api/v1/lists/1
+curl -X PUT -d "$BODY" -H "Authorization: Bearer BEARER_TOKEN" http://localhost:4000/api/v1/lists/1
 ```
 
 
 ### Delete a reading List
 ```bash
-curl -X DELETE localhost:4000/api/v1/lists/:rl_id
+curl -X DELETE -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/lists/:rl_id
 ```
 
 ### Add book to reading list
@@ -91,7 +91,7 @@ BODY='{
 
 
 #replace :rl_id with the id or list book is being added to
-curl -X POST localhost:4000/api/v1/lists/:rl_id/books -d
+curl -X POST -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/lists/:rl_id/books -d
 ```
 
 ### Delete Book from a reading list
@@ -102,8 +102,17 @@ BODY='{
 }'
 
 #replace :rl_id with reading list book belongs to
-curl -X DELETE -d "$BODY" localhost:4000/api/v1/lists/:rl_id/books
+curl -X DELETE -d "$BODY" -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/lists/:rl_id/books
 ```
+
+### Get a specific user reading list
+
+```bash
+# replace U_ID with valid user id
+curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/user/U_ID/lists
+
+```
+
 
  ## USER SECTION
 
@@ -111,13 +120,13 @@ curl -X DELETE -d "$BODY" localhost:4000/api/v1/lists/:rl_id/books
 
 ```bash
 # Replace ":uid" with the user ID
-curl -i http://localhost:4000/api/v1/users/:uid
+curl -i-H "Authorization: Bearer BEARER_TOKEN" http://localhost:4000/api/v1/users/:uid
 ```
 
  ## BOOK SECTION
  
 
-### Inser New Book
+### Insert New Book
 
 ```bash 
 #declare body
@@ -130,19 +139,19 @@ BODY='{
   "description": "A comprehensive guide to advanced programming concepts and techniques in Go."
 }'
 
-curl -X POST -d "$BODY" localhost:4000/api/v1/books
+curl -X POST -d "$BODY" -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/books
 ```
 
 ### Fetch all Books with Pagination
 
 ```bash 
-curl -i localhost:4000/api/v1/books
+curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/books
 ```
 
 ### Fetch Book Using ID
  ```bash
 
- curl -i localhost:4000/api/v1/books/:b_id
+ curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/books/:b_id
 
  ```
 
@@ -158,24 +167,24 @@ BODY='{
 }'
 
 #replace 'b_id' with book value
- curl -X PUT localhost:4000/api/v1/books/b_id -d "BODY"
+ curl -X PUT -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/books/b_id -d "BODY"
 
  ```
 
 ### Delete a Book
 ```bash
 #replace 'b_id' with book value
- curl -X DELETE localhost:4000/api/v1/books/b_id
+ curl -X DELETE -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/books/b_id
 ```
 
 ### Search Book By author/title/genre
 ```bash
 # replace TITLE/GENRE/AUTHOR with query parameter
-curl -i localhost:4000/api/v1/book/search?title=TITLE
+curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/book/search?title=TITLE
 
-curl -i localhost:4000/api/v1/book/search?author=AUTHOR
+curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/book/search?author=AUTHOR
 
-curl -i localhost:4000/api/v1/book/search?genre=GENRE
+curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/book/search?genre=GENRE
 ```
 
  ## REVIEWS SECTION
@@ -186,20 +195,21 @@ curl -i localhost:4000/api/v1/book/search?genre=GENRE
 
  #change values before using
   BODY='{
-  "user_name":"USR NAME HERE",
+
+  "user_id":USERID,
   "rating":RATING HERE IN INT TYPE,
   "review_text":"MESSAGE HERE"
   }'
 
 #replace :book_id with book id number
-  curl -X POST -d "$BPDY" localhost:4000/api/v1/books/:book_id/reviews
+  curl -X POST -d "$BODY" -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/books/:book_id/reviews
  ``` 
 
  ### Get all reviews for a book
 
 ```bash
 #replace BOOK_ID with valid book id
-  curl -i localhost:4000/api/v1//books/BOOK_ID/reviews
+  curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/books/BOOK_ID/reviews
 ```
 
  ### Update a review for a specific book
@@ -210,12 +220,12 @@ curl -i localhost:4000/api/v1/book/search?genre=GENRE
 
 
   #REPLACE REV_ID with valid review id
-  curl -X PUT -d "$BODY" localhost:4000/api/v1//reviews/REV_ID
+  curl -X PUT -d "$BODY" -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/reviews/REV_ID
  ```
 
  ### Delete a reciew for a book
 
  ```bash
  #replace BOOK_ID with valid review id
-curl -X DELETE localhost:4000/api/v1_/books/BOOK_ID
+curl -X DELETE -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1_/books/BOOK_ID
  ```

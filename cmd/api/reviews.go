@@ -18,7 +18,7 @@ func (a *applicationDependences) addReviewForBooksHandler(w http.ResponseWriter,
 	}
 
 	var incomingData struct {
-		User_name  string  `json:"user_name"`
+		UserID     int64   `json:"user_id"`
 		Rating     float32 `json:"rating"`
 		ReviewText string  `json:"review_text"`
 	}
@@ -32,7 +32,7 @@ func (a *applicationDependences) addReviewForBooksHandler(w http.ResponseWriter,
 
 	review := &data.Review{
 		Book_ID:    book_id,
-		User_name:  incomingData.User_name,
+		User_ID:    incomingData.UserID,
 		Rating:     incomingData.Rating,
 		ReviewText: incomingData.ReviewText,
 	}
@@ -218,4 +218,35 @@ func (a *applicationDependences) updateReviewForBookHandler(w http.ResponseWrite
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 	}
+}
+
+func (a *applicationDependences) fetchReviewByIdHandler(w http.ResponseWriter, r *http.Request) {
+	pid, err := a.readIDParam(r, "u_id")
+	if err != nil || pid < 1 {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	reviews, err := a.reviewModel.GetAllByUserID(pid)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+			return
+		default:
+			a.serverErrorResponse(w, r, err)
+			return
+		}
+	}
+
+	data := envelope{
+		"reviews": reviews,
+	}
+
+	err = a.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+
 }

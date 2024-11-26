@@ -18,7 +18,7 @@ type ReviewModel struct {
 type Review struct {
 	ID           int32     `json:"id"`
 	Book_ID      int64     `json:"book_id"`
-	User_name    string    `json:"user_name"`
+	User_ID      int64     `json:"user_id"`
 	Rating       float32   `json:"rating"`
 	ReviewText   string    `json:"review_text"`
 	HelpfulCount int32     `json:"helpful_count"`
@@ -28,8 +28,8 @@ type Review struct {
 
 func ValidateReview(v *validator.Validator, review *Review) {
 	//validate values
-	v.Check(review.User_name != "", "user_name", "must be provided")
-	v.Check(len(review.User_name) <= 25, "user_name", "must not be more than 25 bytes")
+	// v.Check(review.User_name != "", "user_name", "must be provided")
+	// v.Check(len(review.User_name) <= 25, "user_name", "must not be more than 25 bytes")
 
 	v.Check(review.Rating >= 0 && review.Rating <= 5, "rating", "must be a number between 1 and 5")
 
@@ -39,11 +39,11 @@ func ValidateReview(v *validator.Validator, review *Review) {
 
 func (r *ReviewModel) InsertReview(review *Review) error {
 	query := `
-	INSERT INTO reviews (book_id, user_name, rating, review_text)
+	INSERT INTO reviews (book_id, user_id, rating, review_text)
 	VALUES ($1, $2, $3, $4)
 	RETURNING id, helpful_count, created_at, version
 	`
-	args := []any{review.Book_ID, review.User_name, review.Rating, review.ReviewText}
+	args := []any{review.Book_ID, review.User_ID, review.Rating, review.ReviewText}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -58,7 +58,7 @@ func (r *ReviewModel) InsertReview(review *Review) error {
 
 func (r *ReviewModel) GetAllReviews(filters Fileters) ([]*Review, Metadata, error) {
 	query := fmt.Sprintf(`
-	SELECT COUNT(*) OVER(), id, book_id, user_name, rating, review_text, helpful_count, created_at, version
+	SELECT COUNT(*) OVER(), id, book_id, user_id, rating, review_text, helpful_count, created_at, version
 	FROM reviews
 	ORDER BY %s %s, id ASC
 	LIMIT $1 OFFSET $2
@@ -86,7 +86,7 @@ func (r *ReviewModel) GetAllReviews(filters Fileters) ([]*Review, Metadata, erro
 			&totalRecords,
 			&review.ID,
 			&review.Book_ID,
-			&review.User_name,
+			&review.User_ID,
 			&review.Rating,
 			&review.ReviewText,
 			&review.HelpfulCount,
@@ -110,7 +110,7 @@ func (r *ReviewModel) GetAllReviews(filters Fileters) ([]*Review, Metadata, erro
 
 func (r *ReviewModel) GetByID(id int64) (*Review, error) {
 	query := `
-	SELECT id, book_id, user_name, rating, review_text, helpful_count, created_at, version
+	SELECT id, book_id, user_id, rating, review_text, helpful_count, created_at, version
 	FROM reviews
 	WHERE id = $1
 	`
@@ -123,7 +123,7 @@ func (r *ReviewModel) GetByID(id int64) (*Review, error) {
 	err := r.DB.QueryRowContext(ctx, query, id).Scan(
 		&review.ID,
 		&review.Book_ID,
-		&review.User_name,
+		&review.User_ID,
 		&review.Rating,
 		&review.ReviewText,
 		&review.HelpfulCount,
@@ -189,4 +189,48 @@ func (r *ReviewModel) DeleteReview(id int64) error {
 	}
 
 	return nil
+}
+
+func (r *ReviewModel) GetAllByUserID(user_id int64) ([]*Review, error) {
+	query := `
+	SELECT id, book_id, user_id, rating, review_text, helpful_count, created_at, version
+	FROM reviews
+	WHERE user_id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := r.DB.QueryContext(ctx, query, user_id)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	reviews := []*Review{}
+
+	for rows.Next() {
+		var review Review
+		err := rows.Scan(
+			&review.ID,
+			&review.Book_ID,
+			&review.User_ID,
+			&review.Rating,
+			&review.ReviewText,
+			&review.HelpfulCount,
+			&review.Created_at,
+			&review.Version,
+		)
+		if err != nil {
+			return nil, err
+		}
+		reviews = append(reviews, &review)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return reviews, nil
 }
