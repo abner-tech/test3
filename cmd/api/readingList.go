@@ -209,7 +209,7 @@ func (a *applicationDependences) updateReadingListhandler(w http.ResponseWriter,
 		"reading_list": list,
 	}
 
-	a.writeJSON(w, http.StatusOK, data, nil)
+	err = a.writeJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 		return

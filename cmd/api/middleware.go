@@ -173,3 +173,23 @@ func (a *applicationDependences) requireActivatedUser(next http.HandlerFunc) htt
 	// actually authenticated.
 	return a.requireAuthenticatedUser(fn)
 }
+
+// check if the user has teh right permissions, we send permissions which is expected as an argument
+func (a *applicationDependences) requirePermission(permissionCode string, next http.HandlerFunc) http.HandlerFunc {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		user := a.contextGetUser(r)
+		//get all permissions accociated with the usr
+		permissions, err := a.permisionsModel.GetAllForUser(user.ID)
+		if err != nil {
+			a.serverErrorResponse(w, r, err)
+			return
+		}
+		if !permissions.Include(permissionCode) {
+			a.notFoundResponse(w, r)
+			return
+		}
+		//everything good
+		next.ServeHTTP(w, r)
+	}
+	return a.requireActivatedUser(fn)
+}

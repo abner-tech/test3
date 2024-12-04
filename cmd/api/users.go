@@ -55,6 +55,13 @@ func (a *applicationDependences) registerUserHandler(w http.ResponseWriter, r *h
 		return
 	}
 
+	//read permissions for new users, later we addd the write when needed
+	err = a.permisionsModel.AddForUser(user.ID, "reviews:read")
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+
 	//new activation token to expire in 3 days time
 	token, err := a.tokenModel.New(user.ID, 3*24*time.Hour, data.ScopeActivation)
 	if err != nil {
@@ -187,4 +194,3 @@ func (a *applicationDependences) listUserProfileHandler(w http.ResponseWriter, r
 		return
 	}
 }
-

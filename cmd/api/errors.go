@@ -90,3 +90,11 @@ func (a *applicationDependences) inactiveAccountResponse(w http.ResponseWriter, 
 	message := "your user account must be activated to access this resource"
 	a.errorResponseJSON(w, r, http.StatusForbidden, message)
 }
+
+// forbidden statos on bad permissions
+func (a *applicationDependences) notPermittedResponse(w http.ResponseWriter, r *http.Request) {
+	message := "your account does not have the required permissions to access this resource or perform this action"
+
+	a.errorResponseJSON(w, r, http.StatusForbidden, message)
+}
+
