@@ -5,7 +5,22 @@ include .envrc
 .PHONY: run/api
 run/api:
 	@echo 'Running Application...'
-	@go run ./cmd/api -port=4000 -env=development -limiter-burst=5 -limiter-rps=2 -limiter-enabled=false -db-dsn=${TEST3_DB_DSN}
+	@go run ./cmd/api \
+	-port=4000 \
+	-env=development \
+	-limiter-burst=5 \
+	-limiter-rps=2 \
+	-limiter-enabled=false \
+	-db-dsn=${TEST3_DB_DSN} \
+	-smtp-host=${SMTP_HOST} \
+	-smtp-port=${SMTP_PORT} \
+	-smtp-username=${SMTP_USERNAME} \
+	-smtp-password=${SMTP_PASSWORD} \
+	-smtp-sender=${SMTP_SENDER} \
+	-limiter-rps=3 \
+	-limiter-burst=5 \
+	-limiter-enabled=false \
+	-cors-trusted-origin="http://localhost:9000 http://localhost:9001"
 ## @go run ./cmd/api/ -port=4000 -env=production -db-dsn=${COMMENTS_DB_DSN}
 
 ## db/psql: connect to the database using psql (terminal)

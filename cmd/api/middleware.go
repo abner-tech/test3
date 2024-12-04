@@ -193,3 +193,32 @@ func (a *applicationDependences) requirePermission(permissionCode string, next h
 	}
 	return a.requireActivatedUser(fn)
 }
+
+func (a *applicationDependences) enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//w.Header().Set("Access-Control-Allow-Origin", "*")
+		/*
+		 this header must be added to the response object or we are defeating the purpose of CORS, Why? browsers
+		  want to be fast, so they cache information, If on one resposne we say that appletree.com is a trusted origin,
+		  the browser is tempted to cache this, so if later a response comes in from a different origin (evel.com), the
+		  browser will be tempted to look in its cache and do what it did for the last response that came in allow it -
+		  which is bad and send the same response. such as displaying personal account information. SO, we tell the browser
+		  that trusted origins can change for it not to rely on cache memory.
+
+		*/
+		w.Header().Add("Vary", "Origin")
+		//we check the request origin and verify if its part of the allowed list
+		origin := r.Header.Get("Origin")
+
+		if origin != "" {
+			for i := range a.config.cors.trustedOrigins {
+				if origin == a.config.cors.trustedOrigins[i] {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					break
+				}
+			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}

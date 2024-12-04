@@ -55,5 +55,5 @@ func (a *applicationDependences) routes() http.Handler {
 	router.HandlerFunc(http.MethodPut, "/api/v1/reviews/:r_id", a.requireActivatedUser(a.requirePermission("reviews:write", a.updateReviewForBookHandler)))
 	router.HandlerFunc(http.MethodGet, "/api/v1/user/:u_id/reviews", a.requireActivatedUser(a.requirePermission("reviews:read", a.fetchReviewByIdHandler)))
 
-	return a.recoverPanic(a.rateLimiting(a.authenticate(router)))
+	return a.enableCORS(a.recoverPanic(a.rateLimiting(a.authenticate(router))))
 }
