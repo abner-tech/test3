@@ -24,6 +24,8 @@ func (a *applicationDependences) routes() http.Handler {
 	// User activation and authentication
 	router.HandlerFunc(http.MethodPut, "/api/v1/users/activated", a.activateUserHandler)
 	router.HandlerFunc(http.MethodPost, "/api/v1/tokens/authentication", a.createAuthenticationTokenHandler)
+	router.HandlerFunc(http.MethodPost, "/api/v1/tokens/password-reset", a.createPasswordResetHandler)
+	router.HandlerFunc(http.MethodPut, "/api/v1/tokens/password-reset", a.userPasswordReset)
 
 	// User's reading lists
 	router.HandlerFunc(http.MethodGet, "/api/v1/user/:u_id/lists", a.requireActivatedUser(a.requirePermission("reading_list:read", a.listUsersReadingLists)))

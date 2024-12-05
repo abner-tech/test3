@@ -194,3 +194,84 @@ func (a *applicationDependences) listUserProfileHandler(w http.ResponseWriter, r
 		return
 	}
 }
+
+func (a *applicationDependences) userPasswordReset(w http.ResponseWriter, r *http.Request) {
+
+	var incomingData struct {
+		Token       string `json:"token"`
+		NewPassword string `json:"newPassword"`
+	}
+
+	err := a.readJSON(w, r, &incomingData)
+	if err != nil {
+		a.badRequestResponse(w, r, err)
+	}
+
+	v := validator.New()
+	data.ValidatePassword(v, incomingData.NewPassword)
+
+	//validate token
+	data.ValidatetokenPlaintext(v, incomingData.Token)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	//ensure the token belongs to the user
+	user, err := a.userModel.GetForToken(data.ScopePasswordReset, incomingData.Token)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			v.AddError("token", "invalid or expired token")
+		default:
+			a.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	//get user info based on the token
+	//using this so we get the correct fields on the user variable
+	user, err = a.userModel.GetByID(user.ID)
+	if err != nil {
+		a.notFoundResponse(w, r)
+		return
+	}
+
+	//hashing password and storing with the current user version
+	err = user.Password.Set(incomingData.NewPassword)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+
+	//validate user
+	data.ValidateUser(v, user)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = a.userModel.Update(user)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+
+	//delete existing password reset tokens for the update user
+	err = a.tokenModel.DeleteAllForUser(data.ScopePasswordReset, user.ID)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+
+	data := envelope{
+		"message": "password changed sucessfully",
+	}
+
+	//status code 201 resource created
+	err = a.writeJSON(w, http.StatusCreated, data, nil)
+	if err != nil {
+		a.serverErrorResponse(w, r, err)
+		return
+	}
+}

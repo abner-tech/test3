@@ -189,6 +189,7 @@ curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/book/searc
 
  ## REVIEWS SECTION
 
+
  ### Add review for a book
 
  ```bash
@@ -229,3 +230,9 @@ curl -i -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1/book/searc
  #replace BOOK_ID with valid review id
 curl -X DELETE -H "Authorization: Bearer BEARER_TOKEN" localhost:4000/api/v1_/books/BOOK_ID
  ```
+
+ ## RESET USER PASSWORD
+
+ ## Send Email to create Token
+
+ 

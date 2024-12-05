@@ -11,12 +11,7 @@ run/api:
 	-limiter-burst=5 \
 	-limiter-rps=2 \
 	-limiter-enabled=false \
-	-db-dsn=${TEST3_DB_DSN} \
-	-smtp-host=${SMTP_HOST} \
-	-smtp-port=${SMTP_PORT} \
-	-smtp-username=${SMTP_USERNAME} \
-	-smtp-password=${SMTP_PASSWORD} \
-	-smtp-sender=${SMTP_SENDER} \
+
 	-limiter-rps=3 \
 	-limiter-burst=5 \
 	-limiter-enabled=false \
