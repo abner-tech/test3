@@ -207,6 +207,7 @@ func (a *applicationDependences) enableCORS(next http.Handler) http.Handler {
 
 		*/
 		w.Header().Add("Vary", "Origin")
+		w.Header().Add("Vary", "Access-Control-Request-Method")
 		//we check the request origin and verify if its part of the allowed list
 		origin := r.Header.Get("Origin")
 
@@ -214,6 +215,15 @@ func (a *applicationDependences) enableCORS(next http.Handler) http.Handler {
 			for i := range a.config.cors.trustedOrigins {
 				if origin == a.config.cors.trustedOrigins[i] {
 					w.Header().Set("Access-Control-Allow-Origin", origin)
+					//check if it is a preflight CORS request
+					if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
+						w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, PUT, PATCH, POST, DELETE")
+						w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+						//we need to send a 200 OK status. Also, since there is no need to continue the middleware chain,
+						// we leave- remember, it is not real request but only a preflight CORS request
+						w.WriteHeader(http.StatusOK)
+						return
+					}
 					break
 				}
 			}

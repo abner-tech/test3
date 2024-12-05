@@ -25,7 +25,7 @@ curl -X PUT -d '{"token": "TOKEN_VALUE"}' http://localhost:4000/api/v1/users/act
 BODY='{"email": "john@example.com", "password": "mangotree"}'
 
 # Trigger the authentication endpoint
-curl -d "$BODY" http://localhost:4000/api/v1/tokens/authentication
+curl -X POST-d "$BODY" http://localhost:4000/api/v1/tokens/authentication
 ```
 
 ### Step 2: Use the "BEARER TOKEN"
