@@ -11,11 +11,10 @@ run/api:
 	-limiter-burst=5 \
 	-limiter-rps=2 \
 	-limiter-enabled=false \
-
 	-limiter-rps=3 \
 	-limiter-burst=5 \
 	-limiter-enabled=false \
-	-cors-trusted-origin="http://localhost:9000 http://localhost:9001"
+	-cors-trusted-origin="http://localhost:9000 http://localhost:9001 http://localhost:5500"
 ## @go run ./cmd/api/ -port=4000 -env=production -db-dsn=${COMMENTS_DB_DSN}
 
 ## db/psql: connect to the database using psql (terminal)
