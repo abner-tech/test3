@@ -58,8 +58,9 @@ func main() {
 	flag.IntVar(&settings.port, "port", 4000, "Server Port")
 	flag.StringVar(&settings.environment, "env", "development", "Environment(development|staging|production)")
 	//read the dsn
-	flag.StringVar(&settings.db.dsn, "db-dsn", "postgres://test3:test3@localhost/test3?sslmode=disable", "PostgreSQL DSN")
+	flag.StringVar(&settings.db.dsn, "db-dsn", "postgres://test3:test3@localhost/test3?sslmode=disable", "PostgreSQL DSN") //local testing
 
+	//flag.StringVar(&settings.db.dsn, "db-dsn", "postgresql://abner:vBcWyT35c6bbfswuUOM1rKjuAFEUdsFH@dpg-cttekbrv2p9s738i3rig-a.oregon-postgres.render.com/bclub", "PostgreSQL DSN")
 	//limiter flags
 	flag.Float64Var(&settings.limiter.rps, "limiter-rps", 2, "rate limiter maximum request per second")
 	flag.IntVar(&settings.limiter.burst, "limiter-burst", 5, "rate limiter maximum burst")

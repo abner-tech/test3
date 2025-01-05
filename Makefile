@@ -7,6 +7,7 @@ run/api:
 	@echo 'Running Application...'
 	@go run ./cmd/api \
 	-port=4000 \
+	-db-dsn=${TEST3_DB_DSN} \
 	-env=development \
 	-limiter-burst=5 \
 	-limiter-rps=2 \
